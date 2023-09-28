@@ -38,9 +38,10 @@ public class FindMarker : MonoBehaviour
                 moving = true;
             }
 
-            // If we're at the marker then stop moving
+            // If we're at the marker then stop moving and face forward
             if (!TooFarFromMarker()) {
                 moving = false;
+                Facing();
             }
 
             // If we are moving, then lerp our way over to the marker
@@ -56,5 +57,9 @@ public class FindMarker : MonoBehaviour
 
     bool TooFarFromMarker() {
         return (transform.position - end).magnitude > distanceFromMark;
+    }
+
+    void Facing() {
+        transform.rotation = marker.transform.rotation;
     }
 }

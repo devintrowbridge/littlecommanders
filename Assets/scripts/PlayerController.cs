@@ -46,7 +46,7 @@ public class PlayerController : MonoBehaviour
                 formation = Instantiate(
                     formationPrefab, 
                     avatar.transform.position + avatar.transform.forward * formationOffset, 
-                    avatar.transform.rotation);
+                    Quaternion.Inverse(avatar.transform.rotation));
             } else {
                 Destroy(formation);
                 formation = null;
