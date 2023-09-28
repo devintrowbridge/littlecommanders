@@ -21,6 +21,9 @@ public class PlayerController : MonoBehaviour
 
     public Material mat;
 
+    public GameObject cmdMenu;
+    public float maxCommandDist = 10f;
+
 
     // Start is called before the first frame update
     void Start()
@@ -29,7 +32,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         // movement
         float horz = Input.GetAxis("Horizontal");
@@ -47,22 +50,27 @@ public class PlayerController : MonoBehaviour
         // Look direction
         Aim();
 
-        if (Input.GetButtonUp("Fall In")) {
-            fallIn = !fallIn;
+        if (Input.GetButtonUp("Fall In")) FallIn();
+        if (Input.GetButtonDown("Command Menu")) cmdMenu.SetActive(!cmdMenu.activeSelf);
+    }
+    
+    private void FallIn()
+    {
+        fallIn = !fallIn;
 
-            if (fallIn) {
-                var rot = Quaternion.LookRotation(- avatar.transform.forward, Vector3.up);
+        if (fallIn) {
+            var rot = Quaternion.LookRotation(-avatar.transform.forward, Vector3.up);
 
-                formation = Instantiate(
-                    formationPrefab, 
-                    avatar.transform.position + avatar.transform.forward * formationOffset,
-                    rot
-                ).GetComponent<FormationController>();
-                formation.SetColor(mat);
-            } else {
-                Destroy(formation.gameObject);
-                formation = null;
-            }
+            formation = Instantiate(
+                formationPrefab,
+                avatar.transform.position + avatar.transform.forward * formationOffset,
+                rot
+            ).GetComponent<FormationController>();
+            formation.SetColor(mat);
+        }
+        else {
+            Destroy(formation.gameObject);
+            formation = null;
         }
     }
 
@@ -93,6 +101,33 @@ public class PlayerController : MonoBehaviour
         else {
             // The Raycast did not hit anything.
             return (success: false, position: Vector3.zero);
+        }
+    }
+
+    private bool Commandable()
+    {
+        return formation != null & Vector3.Distance(avatar.transform.position, formation.transform.position) < maxCommandDist;
+    }
+
+    public void CommandForwardMarch()
+    {
+        if (Commandable()) {
+            formation.ForwardMarch();
+            cmdMenu.SetActive(false);
+        }
+    }
+    public void CommandHalt()
+    {
+        if (Commandable()) {
+            formation.Halt();
+            cmdMenu.SetActive(false);
+        }
+    }
+
+    public void Follow()
+    {
+        if (Commandable()) {
+
         }
     }
 }

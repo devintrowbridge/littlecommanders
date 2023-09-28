@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Timeline;
 
 public class FormationController : MonoBehaviour
 {
@@ -11,6 +12,10 @@ public class FormationController : MonoBehaviour
 
     private Material mat;
     private List<Soldier> soldiers = new List<Soldier>();
+    private List<GameObject> markers = new List<GameObject>();
+
+    private bool forwardMarch;
+    private float forwardSpeed = 100f;
 
     // Start is called before the first frame update
     void Start()
@@ -20,9 +25,17 @@ public class FormationController : MonoBehaviour
             if (hit.gameObject.CompareTag("Soldier")) {
                 var soldier = hit.gameObject.GetComponent<Soldier>();
                 soldiers.Add(soldier);
+                forwardSpeed = soldier.speed;
             }
         }
         GenerateFormation();
+    }
+
+    private void Update()
+    {
+        if (forwardMarch) {
+            transform.Translate(Vector3.forward * forwardSpeed * Time.deltaTime);
+        }
     }
 
     public void GenerateFormation() 
@@ -37,11 +50,13 @@ public class FormationController : MonoBehaviour
 
         for (int position = 0; position < positions; ++position) {
             if (soldier.Current == null) break;
-            ((Soldier)soldier.Current).marker = Instantiate(
+            var marker = Instantiate(
                 markerPrefab, 
                 currPos, 
                 transform.rotation, 
                 transform);
+            ((Soldier)soldier.Current).marker = marker;
+            markers.Add(marker);
             currPos += incrPos;
             soldier.MoveNext();
         }
@@ -62,5 +77,19 @@ public class FormationController : MonoBehaviour
         foreach (var soldier in soldiers) {
             if (soldier != null) soldier.ClearColor();
         }
+    }
+
+    public void ForwardMarch()
+    {
+        forwardMarch = true;
+        foreach (var marker in markers) {
+            marker.transform.Translate(Vector3.forward * 5);
+        }
+
+    }
+
+    public void Halt()
+    {
+        forwardMarch = false;
     }
 }

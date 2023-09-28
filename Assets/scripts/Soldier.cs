@@ -12,8 +12,6 @@ public class Soldier : MonoBehaviour
     public float speed = 10f;
     public float acc = 10f;
     public bool moving = false;
-    private float startTime;
-    private float journeyLength;
 
     public float maxDistanceFromMark = .5f;
     private float tolerableDistFromMark = 0;
@@ -24,10 +22,12 @@ public class Soldier : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         if (marker != null) GetOnMark();
-        else moving = false;
+        else {
+            moving = false;
+        }
     }
 
     public void ClearColor()
@@ -48,9 +48,6 @@ public class Soldier : MonoBehaviour
         if (TooFarFromMarker() && !moving) {
             Debug.Log("starting");
             tolerableDistFromMark = UnityEngine.Random.Range(.1f, maxDistanceFromMark);
-            start = transform.position;
-            journeyLength = Vector3.Distance(start, marker.transform.position);
-            startTime = Time.time;
             moving = true;
         }
 
@@ -61,13 +58,11 @@ public class Soldier : MonoBehaviour
             Facing();
         }
 
-        // If we are moving, then lerp our way over to the marker
+        // If we are moving, then translate our way over to the marker
         if (moving) {
             Debug.Log("Moving");
-            float distCovered = (Time.time - startTime) * speed;
-            float fractionOfJourney = distCovered / journeyLength;
-            transform.position = Vector3.Lerp(start, end, fractionOfJourney);
             transform.LookAt(end);
+            transform.Translate(Vector3.forward * speed * Time.deltaTime);
         }
     }
 
