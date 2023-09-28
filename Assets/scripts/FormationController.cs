@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,8 @@ using UnityEngine.Timeline;
 
 public class FormationController : MonoBehaviour
 {
+    public int maxPerRank = 30;
+
     public float yellDist = 10;
     public GameObject markerPrefab;
     public float spacing = 2f;
@@ -44,25 +47,57 @@ public class FormationController : MonoBehaviour
         IEnumerator soldier = soldiers.GetEnumerator();
         soldier.MoveNext();
 
-        float formationWidth = positions * spacing - spacing;
-        Vector3 currPos = transform.position - transform.right * formationWidth / 2;
-        Vector3 incrPos = transform.right * spacing;
+        float formationWidth = FormationWidth(positions);
 
-        for (int position = 0; position < positions; ++position) {
-            if (soldier.Current == null) break;
+        foreach (var pos in NextPos(positions)) {
             var marker = Instantiate(
-                markerPrefab, 
-                currPos, 
-                transform.rotation, 
+                markerPrefab,
+                pos,
+                transform.rotation,
                 transform);
             ((Soldier)soldier.Current).marker = marker;
             markers.Add(marker);
-            currPos += incrPos;
             soldier.MoveNext();
         }
+        transform.position = transform.position + transform.right * formationWidth / 2;
 
         if (mat != null) SetColor(mat);
     }
+
+    float FormationWidth(int totalPos)
+    {
+        if (totalPos == 1) return 0;
+        if (totalPos == 2) return 1 * spacing;
+        if (totalPos <= 9) return 2 * spacing;
+        return Mathf.Floor(totalPos / 3) * spacing;
+    }
+
+    IEnumerable<Vector3> NextPos(int totalPos)
+    {
+        /*  Basic idea is to fill out the first 3 ranks with 3 then go by file
+         *  
+         *  7 | 8 | 9 | 12 | 15  | ... | 90 |
+         *  4 | 5 | 6 | 11 | 14  | ... | 89 |
+         *  1 | 2 | 3 | 10 | 13  | ... | 88 |
+         */
+        var zero = transform.position;
+        int rank = 0;
+        int file = 0;
+
+        for (int i = 0; i < totalPos; ++i) {
+            Debug.Log("rank " + rank + " file " + file);
+            yield return zero - rank * transform.forward * spacing - file * transform.right * spacing;
+
+            if (i < 8) {
+                file++;
+                if (file > 2) { rank++; file = 0; }
+            } else {
+                rank++;
+                if (rank > 2) { file++; rank = 0; }
+            }
+        }
+    }
+
 
     public void SetColor(Material mat_)
     {
