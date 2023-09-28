@@ -41,6 +41,17 @@ public class FormationController : MonoBehaviour
         }
     }
 
+    public bool InCommandRange(Vector3 position)
+    {
+        foreach (var sol in soldiers) {
+            if (Vector3.Distance(sol.gameObject.transform.position, position) < yellDist) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void GenerateFormation() 
     {
         int positions = soldiers.Count;

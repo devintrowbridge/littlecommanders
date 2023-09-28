@@ -110,7 +110,7 @@ public class PlayerController : MonoBehaviour
 
     private bool Commandable()
     {
-        return formation != null & Vector3.Distance(avatar.transform.position, formation.transform.position) < maxCommandDist;
+        return formation != null & formation.InCommandRange(transform.position);
     }
 
     public void CommandForwardMarch()
