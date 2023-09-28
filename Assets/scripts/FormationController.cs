@@ -134,8 +134,8 @@ public class FormationController : MonoBehaviour
     }
     public void Reload()
     {
-        foreach (var subdivision in sd) {
-            subdivision.Reload();
+        foreach (var s in soldiers) {
+            s.Reload();
         }
     }
 }

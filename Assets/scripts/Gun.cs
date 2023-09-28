@@ -9,6 +9,7 @@ public class Gun : MonoBehaviour
     private ParticleSystem gunspark;
 
     bool readyToFire;
+    float reloadTime = 5f;
 
     // Start is called before the first frame update
     void Start()
@@ -20,13 +21,17 @@ public class Gun : MonoBehaviour
         readyToFire = false;
     }
 
-    public void Reload()
+    public IEnumerator Reload()
     {
+        yield return new WaitForSeconds(reloadTime);
         readyToFire = true;
+        Debug.Log("Reloaded");
     }
 
     public void Fire()
     {
+        if (!readyToFire) return;
+
         gunshot.Play();
         gunsmoke.Play();
         gunspark.Play();

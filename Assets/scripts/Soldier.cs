@@ -39,9 +39,10 @@ public class Soldier : MonoBehaviour
         StartCoroutine(Fire(delay));
     }
 
-    public static void Reload(Soldier s)
+    public void Reload()
     {
-        Debug.Log("Soldier::Reload doesn't do anything yet");
+        Debug.Log("Reloading");
+        StartCoroutine(gun.Reload());
     }
 
     // Update is called once per frame
