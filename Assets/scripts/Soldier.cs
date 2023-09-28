@@ -46,17 +46,21 @@ public class Soldier : MonoBehaviour
             Constants.LAYER_SOLDIER
         );
 
-
         if (raycast) {
             Debug.DrawRay(transform.position, transform.forward * hit.distance, Color.yellow);
             Debug.Log("Did Hit");
         }
     }
 
-    public static void Fire(Soldier s)
+    public void Fire()
     {
         var delay = UnityEngine.Random.Range(0f, 1f);
-        s.StartCoroutine(s.Fire(delay));
+        StartCoroutine(Fire(delay));
+    }
+
+    public static void Reload(Soldier s)
+    {
+        Debug.Log("Soldier::Reload doesn't do anything yet");
     }
 
     // Update is called once per frame

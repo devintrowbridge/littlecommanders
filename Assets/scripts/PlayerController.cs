@@ -55,13 +55,19 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Command Menu") && Commandable()) cmdMenu.SetActive(!cmdMenu.activeSelf);
         if (Input.GetButtonUp("Column March")) ColumnMarch();
         if (Input.GetButtonDown("Fire") && !cmdMenu.activeSelf) Fire();
+        if (Input.GetButtonDown("Reload")) Reload();
     }
 
     private void Fire()
     {
         if (formation == null) return;
+        StartCoroutine(formation.Fire());
+    }
 
-        formation.Fire();
+    private void Reload()
+    {
+        if (formation == null) return;
+        formation.Reload();
     }
 
     private void ColumnMarch()

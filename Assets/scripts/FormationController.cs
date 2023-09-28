@@ -120,10 +120,22 @@ public class FormationController : MonoBehaviour
         forwardMarch = false;
     }
 
-    public void Fire()
+    public IEnumerator Fire()
     {
-        foreach(var subdivision in sd) {
-            subdivision.DoFront(Soldier.Fire);
+        foreach (var subdivision in sd) {
+            subdivision.MoveToFire();
+        }
+
+        yield return new WaitForSeconds(1);
+
+        foreach (var s in soldiers) {
+            s.Fire();
+        }
+    }
+    public void Reload()
+    {
+        foreach (var subdivision in sd) {
+            subdivision.Reload();
         }
     }
 }

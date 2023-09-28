@@ -13,6 +13,8 @@ public class Subdivision : MonoBehaviour {
 
     Vector3 pivotPoint;
 
+    List<List<GameObject>> ranksColl = new List<List<GameObject>>();
+
     // Update is called once per frame
     void Update()
     {
@@ -24,6 +26,11 @@ public class Subdivision : MonoBehaviour {
     public void Initialize(FormationController ctrl)
     {
         _ctrl = ctrl;
+
+        // Add 3 ranks, may or may not use them all
+        ranksColl.Add(new List<GameObject>());
+        ranksColl.Add(new List<GameObject>());
+        ranksColl.Add(new List<GameObject>());
     }
 
     public void ColumnDir(Vector3 newDir)
@@ -48,6 +55,12 @@ public class Subdivision : MonoBehaviour {
         transform.RotateAround(transform.TransformPoint(pivotPoint), Vector3.up, angleDir);
     }
 
+    void ResetFormation()
+    {
+        OrganizeByRank();
+
+    }
+
     // Creates a marker in the formation for each Soldier to stand on
     public void GenerateFormation(List<Soldier> soldiers)
     {
@@ -64,7 +77,8 @@ public class Subdivision : MonoBehaviour {
                 _ctrl.markerPrefab,
                 RankFileToPos(pos.Item1, pos.Item2),
                 transform.rotation,
-                transform).GetComponent<Marker>();
+                transform
+            ).GetComponent<Marker>();
             marker.rank = pos.Item1;
             marker.file = pos.Item2;
 
@@ -131,34 +145,80 @@ public class Subdivision : MonoBehaviour {
         }
 
         // swap the formation dims so they still make sense
-        (formationDim.x, formationDim.y) = (formationDim.y, formationDim.x);
+        (ranks, files) = (files, ranks);
     }
 
-    public void DoFront(Soldier.Callback cb)
-    {
-        var xComp = new Vector3((formationDim.x - 1) * _ctrl.spacing, 0, 0);
-        var centerFront = transform.position + xComp / 2;
-        Collider[] hitColliders = Physics.OverlapBox(
-            centerFront, 
-            xComp / 2 + Vector3.up, 
-            transform.rotation, 
-            Constants.LAYER_SOLDIER
-        );
 
-        foreach ( var hit in hitColliders ) {
-            var s = hit.gameObject.GetComponent<Soldier>();
-            if ( s != null ) {
-                cb(s);
+    public void OrganizeByRank()
+    {
+        for (var rank = 0; rank < ranks; ++rank) {
+            ranksColl[rank].Clear();
+
+            var width = new Vector3((files - 1) * _ctrl.spacing, 0, 0);
+            var centerFront = - width / 2;
+            var centerRank = centerFront + new Vector3(0, 0, -rank * _ctrl.spacing);
+
+            Debug.Log("width " + width + " center " + centerRank);
+
+            Debug.Log("center " + transform.TransformPoint(centerRank));
+
+            Collider[] hitColliders = Physics.OverlapBox(
+                transform.TransformPoint(centerRank),
+                new Vector3(width.x / 2, .5f, .5f),
+                transform.rotation,
+                Constants.LAYER_MARKER
+            );
+
+            foreach (var hit in hitColliders) {
+                var s = hit.gameObject;
+                if (s != null) {
+                    ranksColl[rank].Add(s);
+                }
+            }
+        }
+
+    }
+
+    // https://www.youtube.com/watch?v=EURWwDbKvWY
+    public void MoveToFire()
+    {
+        // Three steps to volley fire
+        // 1. Move into position
+        // 2. Fire
+        // 3. move back to ranks
+        
+        OrganizeByRank();
+
+        // 1. Move into position
+        // first ranks kneels
+        if (ranksColl.Count > 0) {
+            foreach (var marker in ranksColl[0]) {
+                marker.transform.position += Vector3.down;
+            }
+        }
+
+        // second rank move forward half step still
+        if (ranksColl.Count > 1) {
+            foreach (var marker in ranksColl[1]) {
+                var move = transform.forward * _ctrl.spacing * .5f;
+                marker.transform.position += move;
+            }
+        }
+
+        // third rank takes half step right and full step forward
+        if (ranksColl.Count > 2) {
+            foreach (var marker in ranksColl[2]) {
+                var move = transform.forward * _ctrl.spacing;
+                move += transform.right * _ctrl.spacing * .5f;
+                marker.transform.position += move;
             }
         }
     }
-    void OnDrawGizmos()
+
+    public void Reload()
     {
-        // Draw a yellow cube at the transform position
-        Gizmos.color = Color.red;
-        //Gizmos.matrix = transform.localToWorldMatrix;
-        var xComp = new Vector3((formationDim.x - 1) * _ctrl.spacing, 0, 0);
-        var centerFront = transform.position + xComp / 2;
-        Gizmos.DrawWireCube(centerFront, new Vector3(xComp.x, 1, 1));
+        //DoRank<Soldier>(Soldier.Reload);
+
+        // Move front row to the back
     }
 }

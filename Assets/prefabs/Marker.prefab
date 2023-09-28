@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4613033330910491433}
   - component: {fileID: 9039013037377216961}
   - component: {fileID: 1897723193460643048}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 2855133561260414718}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.108, z: 0.137}
-  m_LocalScale: {x: 0.031632, y: -0.0056106, z: 0.20691681}
+  m_LocalPosition: {x: 0, y: 2, z: 0.137}
+  m_LocalScale: {x: 0.031632, y: 4, z: 0.20691681}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5025854696259958794}
@@ -93,7 +93,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5025854696259958794}
   - component: {fileID: -6180082088571433253}
-  m_Layer: 0
+  - component: {fileID: 1224311902089936436}
+  m_Layer: 6
   m_Name: Marker
   m_TagString: Marker
   m_Icon: {fileID: 0}
@@ -129,6 +130,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75e397fb0dd5965418506bcb2961e71c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  direction: 0
+  speed: 0
+  rank: 0
+  file: 0
+--- !u!65 &1224311902089936436
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3711561821500457441}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.5029627, y: 0.024539337, z: 0.5011684}
+  m_Center: {x: -0.000897184, y: 0.10106047, z: 0.0017943978}
 --- !u!1 &8359432189829455073
 GameObject:
   m_ObjectHideFlags: 0
@@ -140,7 +166,7 @@ GameObject:
   - component: {fileID: 7503028705352447036}
   - component: {fileID: 3724149050100932692}
   - component: {fileID: 968809353671788031}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -156,8 +182,8 @@ Transform:
   m_GameObject: {fileID: 8359432189829455073}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.1, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.01, z: 0.5}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalScale: {x: 0.2, y: 2, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5025854696259958794}
