@@ -9,6 +9,7 @@ public class Gun : MonoBehaviour
 
     bool readyToFire;
     float reloadTime = 5f;
+    float range = 200;
 
     // Start is called before the first frame update
     void Start()
@@ -18,10 +19,15 @@ public class Gun : MonoBehaviour
         gunspark = transform.Find("Gunspark").GetComponent<ParticleSystem>();
 
         readyToFire = false;
+
+        if (Debug.isDebugBuild) {
+            reloadTime = 0.1f;
+        }
     }
 
     public IEnumerator Reload(float multiplier)
     {
+        if (readyToFire) yield break;
         yield return new WaitForSeconds(multiplier * reloadTime);
         readyToFire = true;
         Debug.Log("Reloaded");
@@ -35,18 +41,24 @@ public class Gun : MonoBehaviour
         gunsmoke.Play();
         gunspark.Play();
 
+        var dir = transform.forward;
+        dir.x *= Random.Range(0, 10);
+        dir.z *= Random.Range(0, 10);
+
         var raycast = Physics.Raycast(
             transform.position,
-            transform.forward,
+            dir,
             out var hit,
-            Mathf.Infinity,
+            range,
             Constants.LAYER_SOLDIER
         );
 
+        var dist = range;
         if (raycast) {
-            Debug.DrawRay(transform.position, transform.forward * hit.distance, Color.yellow);
-            hit.transform.gameObject.GetComponent<Soldier>().SetColor(Color.red);
-        }
+            dist = hit.distance;
+            hit.transform.gameObject.GetComponent<Soldier>().Hit();
+        } 
+        Debug.DrawRay(transform.position, dir * dist, Color.yellow, 30, false);
 
         readyToFire = false;
     }
