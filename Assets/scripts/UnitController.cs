@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.Timeline;
 using UnityEngine.UIElements;
 
-public class FormationController : MonoBehaviour
+public class UnitController : MonoBehaviour
 {
     public enum Direction { Left, Right };
 
@@ -20,7 +20,7 @@ public class FormationController : MonoBehaviour
     private Material mat;
     private List<Soldier> soldiers = new List<Soldier>();
 
-    private List<Subdivision> sd = new List<Subdivision>();
+    private List<Formation> formations = new List<Formation>();
 
     public bool forwardMarch { private set; get;  }
     public float forwardSpeed { private set; get; } = Constants.SOLDIER_BASE_MOVE_SPEED;
@@ -30,7 +30,7 @@ public class FormationController : MonoBehaviour
         private set { }  
         get
         {
-            return sd[0].transform.forward;
+            return formations[0].transform.forward;
         }
     }
 
@@ -42,14 +42,14 @@ public class FormationController : MonoBehaviour
             subdivisionPrefab,
             transform.position,
             transform.rotation
-        ).GetComponent<Subdivision>();
+        ).GetComponent<Formation>();
         subd.Initialize(this);
         transform.position = Vector3.zero;
         transform.eulerAngles = Vector3.zero;
-        sd.Add(subd);
+        formations.Add(subd);
 
         // See what soldiers are around
-        Collider[] hits = Physics.OverlapSphere(sd[0].transform.position, yellDist);
+        Collider[] hits = Physics.OverlapSphere(formations[0].transform.position, yellDist);
         foreach (var hit in hits) {
             if (hit.gameObject.CompareTag("Soldier")) {
                 var soldier = hit.gameObject.GetComponent<Soldier>();
@@ -65,13 +65,13 @@ public class FormationController : MonoBehaviour
 
     public void ColumnDir(Vector3 newDir)
     {
-        sd[0].ColumnDir(newDir);
+        formations[0].ColumnDir(newDir);
     }
 
     public void Face(Direction dir)
     {
-        foreach (var subd in sd) {
-            subd.Face(dir);
+        foreach (var f in formations) {
+            f.Face(dir);
         }
     }
 
@@ -103,15 +103,20 @@ public class FormationController : MonoBehaviour
             if (soldier != null) soldier.ClearColor();
         }
 
-        foreach(var subdivision in sd) {
-            if (subdivision != null) {
-                Destroy(subdivision.gameObject);
+        foreach(var f in formations) {
+            if (f != null) {
+                Destroy(f.gameObject);
             }
         }
     }
 
     public void ForwardMarch()
     {
+        foreach (var f in formations) {
+            if (f.formationType == Formation.FormationType.Volley) {
+                f.ResetFormation();
+            }
+        }
         forwardMarch = true;
     }
 
@@ -122,18 +127,26 @@ public class FormationController : MonoBehaviour
 
     public IEnumerator Fire()
     {
-        foreach (var subdivision in sd) {
-            subdivision.MoveToFire();
+        // Can't fire if we're moving
+        if (forwardMarch) yield break;
+
+        // Move into volley formation
+        foreach (var f in formations) {
+            f.MoveToFire();
         }
 
         yield return new WaitForSeconds(1);
 
+        // Give command to fire
         foreach (var s in soldiers) {
             s.Fire();
         }
     }
     public void Reload()
     {
+        // Can't reload if we're moving
+        if (forwardMarch) return;
+
         foreach (var s in soldiers) {
             s.Reload();
         }

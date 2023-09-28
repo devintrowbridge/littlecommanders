@@ -2,27 +2,28 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Timeline;
+using UnityEngine.UIElements;
+using static UnityEditor.PlayerSettings;
 
-public class Subdivision : MonoBehaviour {
-    private enum FormationType {
+public class Formation : MonoBehaviour {
+    public enum FormationType {
         Column,
         Line, 
         Volley,
         Square
     };
 
-    FormationType formationType;
+    public FormationType formationType { get; private set; }
 
+    List<List<Marker>> ranksColl = new List<List<Marker>>();
     public List<Marker> markers = new List<Marker>();
-    private FormationController _ctrl;
+    private UnitController _ctrl;
 
     int ranks;
     int files;
-    Vector3 formationDim;
+    GameObject _center;
 
-    Vector3 pivotPoint;
-
-    List<List<GameObject>> ranksColl = new List<List<GameObject>>();
 
     // Update is called once per frame
     void Update()
@@ -32,23 +33,32 @@ public class Subdivision : MonoBehaviour {
         }
     }
 
-    public void Initialize(FormationController ctrl)
+    public void Initialize(UnitController ctrl)
     {
         _ctrl = ctrl;
 
+        _center = new GameObject();
+        _center.transform.parent = transform;
+        _center.transform.position = transform.position;
+        _center.transform.rotation = transform.rotation;
+        _center.name = "center";
+
         // Add 3 ranks, may or may not use them all
-        ranksColl.Add(new List<GameObject>());
-        ranksColl.Add(new List<GameObject>());
-        ranksColl.Add(new List<GameObject>());
+        ranksColl.Add(new List<Marker>());
+        ranksColl.Add(new List<Marker>());
+        ranksColl.Add(new List<Marker>());
     }
 
     public void ColumnDir(Vector3 newDir)
     {
-        Vector3 formationTrueDim = _ctrl.spacing * (formationDim - new Vector3(1, 0, 1));
         float angleDir = Vector3.SignedAngle(transform.forward, newDir, Vector3.up);
+        if (Mathf.Abs(angleDir) > 90f) return;
+
+        var formationDim = new Vector3(files, 0, ranks);
+        Vector3 formationTrueDim = _ctrl.spacing * (formationDim - new Vector3(1, 0, 1));
 
         // Find the center of the formation and apply an offset to get the front of the formation
-        var center = -new Vector3((files - 1) * _ctrl.spacing / 2, 0, (ranks - 1) * _ctrl.spacing / 2);
+        var center = transform.InverseTransformPoint(_center.transform.position);
         var pivotDir = angleDir > 0 ? Vector3.right : -Vector3.right;
         
         // Push offset out to the edge of the formation in the forward direction
@@ -56,18 +66,17 @@ public class Subdivision : MonoBehaviour {
 
         // Push offset to the inside edge of the turn 
         offset += Vector3.Scale(pivotDir, formationTrueDim / 2);
-
-        // Combine offset with the center to get the pivot point
         var pivotPoint = center + offset;
 
         // rotate formation around pivot
         transform.RotateAround(transform.TransformPoint(pivotPoint), Vector3.up, angleDir);
     }
 
-    void ResetFormation()
+    public void ResetFormation()
     {
-        OrganizeByRank();
-
+        foreach(var marker in markers) {
+            marker.transform.position = marker.lastPos;
+        }
     }
 
     // Creates a marker in the formation for each Soldier to stand on
@@ -90,8 +99,6 @@ public class Subdivision : MonoBehaviour {
                 transform.rotation,
                 transform
             ).GetComponent<Marker>();
-            marker.rank = pos.Item1;
-            marker.file = pos.Item2;
 
             ((Soldier)soldier.Current).marker = marker.gameObject;
 
@@ -101,9 +108,14 @@ public class Subdivision : MonoBehaviour {
 
         ranks++;
         files++;
-        formationDim = new Vector3(files, 0, ranks);
 
         transform.position = transform.position + transform.right * (files - 1) * _ctrl.spacing / 2;
+
+        // set the center
+        var formationDim = new Vector3(files, 0, ranks);
+        var localCenter = (formationDim - new Vector3(1, 0, 1)) * _ctrl.spacing / 2;
+        _center.transform.position = transform.TransformPoint(-localCenter);
+        _center.transform.rotation = transform.rotation;
     }
 
     private Vector3 RankFileToPos(int rank, int file)
@@ -139,21 +151,26 @@ public class Subdivision : MonoBehaviour {
         }
     }
 
-    public void Face(FormationController.Direction dir)
+    public void Face(UnitController.Direction dir)
     {
         // left/right face
         float ang = 90f;
-        if (dir == FormationController.Direction.Left) { ang *= -1; }
+        if (dir == UnitController.Direction.Left) { ang *= -1; }
 
         // Rotate all of the markers as well as the parent so forward is the same for everything
         foreach (var marker in markers) {
             marker.transform.parent = null;
         }
+        _center.transform.parent = null;
+
         transform.Rotate(Vector3.up, ang);
+
         foreach (var marker in markers) {
             marker.transform.parent = transform;
             marker.transform.rotation = transform.rotation;
         }
+        _center.transform.parent = transform;
+        _center.transform.rotation = transform.rotation;
 
         // swap the formation dims so they still make sense
         (ranks, files) = (files, ranks);
@@ -162,8 +179,10 @@ public class Subdivision : MonoBehaviour {
 
     public void OrganizeByRank()
     {
+        ranksColl.Clear();
+
         for (var rank = 0; rank < ranks; ++rank) {
-            ranksColl[rank].Clear();
+            ranksColl.Add(new List<Marker>());
 
             var width = new Vector3((files - 1) * _ctrl.spacing, 0, 0);
             var centerFront = - width / 2;
@@ -177,7 +196,7 @@ public class Subdivision : MonoBehaviour {
             );
 
             foreach (var hit in hitColliders) {
-                var s = hit.gameObject;
+                var s = hit.gameObject.GetComponent<Marker>();
                 if (s != null) {
                     ranksColl[rank].Add(s);
                 }
@@ -191,25 +210,22 @@ public class Subdivision : MonoBehaviour {
     {
         if (formationType == FormationType.Volley) return;
         formationType = FormationType.Volley;
-
-        // Three steps to volley fire
-        // 1. Move into position
-        // 2. Fire
-        // 3. move back to ranks
-        
         OrganizeByRank();
 
-        // 1. Move into position
         // first ranks kneels
         if (ranksColl.Count > 0) {
             foreach (var marker in ranksColl[0]) {
+                marker.lastPos = marker.transform.position;
+
                 marker.transform.position += Vector3.down * 1.2f;
             }
         }
 
-        // second rank move forward half step still
+        // second rank move forward half step, and just a smidge to the right
         if (ranksColl.Count > 1) {
             foreach (var marker in ranksColl[1]) {
+                marker.lastPos = marker.transform.position;
+
                 var move = transform.forward * _ctrl.spacing * .5f;
                 move += transform.right * _ctrl.spacing * .1f;
                 marker.transform.position += move;
@@ -219,17 +235,14 @@ public class Subdivision : MonoBehaviour {
         // third rank takes half step right and full step forward
         if (ranksColl.Count > 2) {
             foreach (var marker in ranksColl[2]) {
+                marker.lastPos = marker.transform.position;
+
                 var move = transform.forward * _ctrl.spacing;
                 move += transform.right * _ctrl.spacing * .5f;
                 marker.transform.position += move;
             }
         }
-    }
 
-    public void Reload()
-    {
-        //DoRank<Soldier>(Soldier.Reload);
 
-        // Move front row to the back
     }
 }

@@ -21,9 +21,9 @@ public class Gun : MonoBehaviour
         readyToFire = false;
     }
 
-    public IEnumerator Reload()
+    public IEnumerator Reload(float multiplier)
     {
-        yield return new WaitForSeconds(reloadTime);
+        yield return new WaitForSeconds(multiplier * reloadTime);
         readyToFire = true;
         Debug.Log("Reloaded");
     }

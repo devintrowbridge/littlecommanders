@@ -42,7 +42,8 @@ public class Soldier : MonoBehaviour
     public void Reload()
     {
         Debug.Log("Reloading");
-        StartCoroutine(gun.Reload());
+        float reloadMultiplier = UnityEngine.Random.Range(.5f, 2f);
+        StartCoroutine(gun.Reload(reloadMultiplier));
     }
 
     // Update is called once per frame

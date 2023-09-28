@@ -12,10 +12,10 @@ public class PlayerController : MonoBehaviour
     public float zoomSpeed = 1f;
     private Camera cam;
     public GameObject avatar;
-    public GameObject formationPrefab;
+    public GameObject unitPrefab;
 
-    private FormationController formation;
-    public float formationOffset = 6f;
+    private UnitController unit;
+    public float unitOffset = 6f;
 
     public Material mat;
 
@@ -43,9 +43,9 @@ public class PlayerController : MonoBehaviour
         var moveDirection = new Vector3(horz, 0, vert).normalized;
         transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
 
-        // Move with formation
-        if (formation && formation.forwardMarch) {
-            transform.Translate(formation.forward * Constants.SOLDIER_BASE_MOVE_SPEED * Time.deltaTime);
+        // Move with unit
+        if (unit && unit.forwardMarch) {
+            transform.Translate(unit.forward * Constants.SOLDIER_BASE_MOVE_SPEED * Time.deltaTime);
         }
 
         // Look direction
@@ -60,14 +60,14 @@ public class PlayerController : MonoBehaviour
 
     private void Fire()
     {
-        if (formation == null) return;
-        StartCoroutine(formation.Fire());
+        if (unit == null) return;
+        StartCoroutine(unit.Fire());
     }
 
     private void Reload()
     {
-        if (formation == null) return;
-        formation.Reload();
+        if (unit == null) return;
+        unit.Reload();
     }
 
     private void ColumnMarch()
@@ -78,19 +78,20 @@ public class PlayerController : MonoBehaviour
 
         var direction = position - avatar.transform.position;
         direction.y = 0;
-        formation.ColumnDir(direction.normalized);
+        unit.ColumnDir(direction.normalized);
     }
     
     private void FallIn()
     {
-        if (formation != null) { Destroy(formation.gameObject); }
+        if (unit != null) { Destroy(unit.gameObject); }
 
         var rot = Quaternion.LookRotation(-avatar.transform.forward, Vector3.up);
-        formation = Instantiate(
-            formationPrefab,
-            avatar.transform.position + avatar.transform.forward * formationOffset,
+        unit = Instantiate(
+            unitPrefab,
+            avatar.transform.position + avatar.transform.forward * unitOffset,
             rot
-        ).GetComponent<FormationController>();
+        ).GetComponent<UnitController>();
+        unit.name = "UnitController";
     }
 
     private void Aim()
@@ -125,7 +126,7 @@ public class PlayerController : MonoBehaviour
 
     private bool Commandable()
     {
-        if (formation != null & formation.InCommandRange(transform.position)) { return true; }
+        if (unit != null & unit.InCommandRange(transform.position)) { return true; }
         Debug.Log("Not Commandable");
         return false;
     }
@@ -133,14 +134,14 @@ public class PlayerController : MonoBehaviour
     public void CommandForwardMarch()
     {
         if (Commandable()) {
-            formation.ForwardMarch();
+            unit.ForwardMarch();
             cmdMenu.SetActive(false);
         } 
     }
     public void CommandHalt()
     {
         if (Commandable()) {
-            formation.Halt();
+            unit.Halt();
             cmdMenu.SetActive(false);
         }
     }
@@ -148,13 +149,13 @@ public class PlayerController : MonoBehaviour
     public void CommandRight()
     {
         if (Commandable()) {
-            formation.Face(FormationController.Direction.Right);
+            unit.Face(UnitController.Direction.Right);
         }
     }
     public void CommandLeft()
     {
         if (Commandable()) {
-            formation.Face(FormationController.Direction.Left);
+            unit.Face(UnitController.Direction.Left);
         }
     }
 }
@@ -162,27 +163,27 @@ public class PlayerController : MonoBehaviour
 /* Facing movements
  * 
  * Movement
- *  • forward march
- *  • halt
+ *  • DONE forward march
+ *  • DONE halt
  *  • charge
  *  • retreat
  * 
  * Firing
- *  • Fire
+ *  • DONE Fire
  *  • Fire at will
  *  • Cease Fire
  *  • Fix Bayonets
  * 
  * Direction Change
- *  • Column Left/Right
- *  • Left and Right Face
+ *  • DONE Column Left/Right
+ *  • DONE Left and Right Face
  *  
  * Dispersion (close, normal, open) these two move through them
  *  • Open Ranks
  *  • Close Ranks
  *  
- * Formations
- *  • Line
- *  • Column
+ * units
+ *  • DONE Line
+ *  • DONE Column
  *  • Square
  */

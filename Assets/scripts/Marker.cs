@@ -9,6 +9,8 @@ public class Marker : MonoBehaviour
     public int rank;
     public int file;
 
+    public Vector3 lastPos;
+
     // Start is called before the first frame update
     void Start()
     {
