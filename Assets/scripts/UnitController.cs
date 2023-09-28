@@ -18,7 +18,6 @@ public class UnitController : MonoBehaviour
     private FormationController formation;
 
     public bool forwardMarch { private set; get;  }
-    public float spacing = 2f;
     public Vector3 travelVec { 
         get {
             return formation.state.travelVec;

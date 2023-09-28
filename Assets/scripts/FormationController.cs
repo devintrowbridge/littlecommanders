@@ -1,6 +1,25 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Timeline;
+
+public class FormPos {
+    public int rank;
+    public int file;
+
+    public FormPos() { }
+    public FormPos(int rank, int file)
+    {
+        this.rank = rank;
+        this.file = file;
+    }
+
+    public override string ToString()
+    {
+        return "FormPos: rank " + rank + ", file " + file;
+    }
+}
 
 public abstract class AFormation 
 {
@@ -33,11 +52,11 @@ public abstract class AFormation
         switch (dir) {
             case UnitController.Direction.Left:
                 // Facing left, the new origin will the the front & left-most corner
-                newOrigin.x = -_fc._ctrl.spacing * (_fc.files - 1);
+                newOrigin.x = -_fc.spacing * (_fc.files - 1);
                 break;
             case UnitController.Direction.Right:
                 // Facing right, the new origin will be the current back & right-most corner 
-                newOrigin.z = -_fc._ctrl.spacing * (_fc.ranks - 1);
+                newOrigin.z = -_fc.spacing * (_fc.ranks - 1);
                 break;
         }
 
@@ -47,8 +66,11 @@ public abstract class AFormation
     public virtual void Face(UnitController.Direction dir)
     {
         // left/right face
-        float ang = 90f;
-        if (dir == UnitController.Direction.Left) { ang *= -1; }
+        float ang = 0f;
+        switch (dir) {
+            case UnitController.Direction.Left:  ang = -90f; break;
+            case UnitController.Direction.Right: ang =  90f; break;
+        }
 
         // Rotate all of the markers as well as the parent so forward is the same for everything
         foreach (var marker in _fc.markers) {
@@ -60,15 +82,21 @@ public abstract class AFormation
         _fc.transform.position = newOrigin;
 
         foreach (var marker in _fc.markers) {
-            marker.transform.parent = _fc.transform;
+            marker.transform.parent   = _fc.transform;
             marker.transform.rotation = _fc.transform.rotation;
+            marker.RankFileFromPos();
         }
 
         // swap the formation dims so they still make sense
         (_fc.ranks, _fc.files) = (_fc.files, _fc.ranks);
     }
 
-    public virtual void ResetFormation() { }
+    public virtual void ResetFormation() 
+    {
+        foreach (var marker in _fc.markers) {
+            marker.transform.localPosition = -new Vector3(marker.file, 0, marker.rank) * _fc.spacing;
+        }
+    }
 
     public virtual void ColumnDir(Vector3 newDir)
     {
@@ -76,7 +104,7 @@ public abstract class AFormation
         if (Mathf.Abs(angleDir) > 90f) return;
 
         var formationDim = new Vector3(_fc.files, 0, _fc.ranks);
-        Vector3 formationTrueDim = _fc._ctrl.spacing * (formationDim - new Vector3(1, 0, 1));
+        Vector3 formationTrueDim = _fc.spacing * (formationDim - new Vector3(1, 0, 1));
 
         // Find the center of the formation and apply an offset to get the front of the formation
         var center = -formationTrueDim / 2;
@@ -91,35 +119,6 @@ public abstract class AFormation
 
         // rotate formation around pivot
         _fc.transform.RotateAround(_fc.transform.TransformPoint(pivotPoint), Vector3.up, angleDir);
-    }
-
-    public virtual List<List<Marker>> OrganizeByRank()
-    {
-        List<List<Marker>> col = new List<List<Marker>>();
-
-        for (var rank = 0; rank < _fc.ranks; ++rank) {
-            col.Add(new List<Marker>());
-
-            var width = new Vector3((_fc.files - 1) * _fc._ctrl.spacing, 0, 0);
-            var centerFront = -width / 2;
-            var centerRank = centerFront + new Vector3(0, 0, -rank * _fc._ctrl.spacing);
-
-            Collider[] hitColliders = Physics.OverlapBox(
-                _fc.transform.TransformPoint(centerRank),
-                new Vector3(width.x / 2, .5f, .5f),
-                _fc.transform.rotation,
-                Constants.LAYER_MARKER
-            );
-
-            foreach (var hit in hitColliders) {
-                var s = hit.gameObject.GetComponent<Marker>();
-                if (s != null) {
-                    col[rank].Add(s);
-                }
-            }
-        }
-
-        return col;
     }
 
     public virtual void MoveToFire() { }
@@ -141,35 +140,22 @@ public class Line : AFormation
 
     public override void MoveToFire() 
     {
-        var ranksCol = OrganizeByRank();
+        foreach(var marker in _fc.markers) {
+            switch (marker.rank) {
+                case 0: // first ranks kneels
+                    marker.transform.position += Vector3.down * 1.2f;
+                    break;
+                case 1: // second rank move forward half step, and just a smidge to the right
+                    marker.transform.position += _fc.transform.forward * _fc.spacing * .5f;
+                    marker.transform.position += _fc.transform.right * _fc.spacing * .1f;
+                    break;
+                case 2: // third rank takes half step right and full step forward
+                    marker.transform.position += _fc.transform.forward * _fc.spacing;
+                    marker.transform.position += _fc.transform.right * _fc.spacing * .5f;
+                    break;
 
-        // first ranks kneels
-        if (ranksCol.Count > 0) {
-            foreach (var marker in ranksCol[0]) {
-                marker.lastPos = marker.transform.position;
-                marker.transform.position += Vector3.down * 1.2f;
-            }
-        }
-
-        // second rank move forward half step, and just a smidge to the right
-        if (ranksCol.Count > 1) {
-            foreach (var marker in ranksCol[1]) {
-                marker.lastPos = marker.transform.position;
-
-                var move = _fc.transform.forward * _fc._ctrl.spacing * .5f;
-                move += _fc.transform.right * _fc._ctrl.spacing * .1f;
-                marker.transform.position += move;
-            }
-        }
-
-        // third rank takes half step right and full step forward
-        if (ranksCol.Count > 2) {
-            foreach (var marker in ranksCol[2]) {
-                marker.lastPos = marker.transform.position;
-
-                var move = _fc.transform.forward * _fc._ctrl.spacing;
-                move += _fc.transform.right * _fc._ctrl.spacing * .5f;
-                marker.transform.position += move;
+                default:
+                    break;
             }
         }
 
@@ -195,9 +181,7 @@ public class Volley : AFormation
 
     public override void ResetFormation()
     {
-        foreach (var marker in _fc.markers) {
-            marker.transform.position = marker.lastPos;
-        }
+        base.ResetFormation();
         _fc.ChangeState(new Line());
     }
 }
@@ -210,12 +194,34 @@ public class FormationController : MonoBehaviour
     public List<Marker> markers = new List<Marker>();
     public UnitController _ctrl { get; private set; }
 
+    public float spacing = 2f;
     public int ranks;
     public int files;
+
+    public float width
+    {
+        get => (files - 1) * spacing;
+        private set => width = 0;
+    }
+
+    public GameObject origin;
+
+    private void Start()
+    {
+        if (Debug.isDebugBuild) {
+            origin = new GameObject();
+            origin.name = "Origin";
+            origin.transform.parent = transform;
+        }
+    }
 
     void Update()
     {
         if (state != null) state.UpdateState();
+        if (Debug.isDebugBuild) {
+            origin.transform.position = transform.position;
+            origin.transform.rotation = transform.rotation;
+        }
     }
 
     public void ChangeState(AFormation newState)
@@ -238,15 +244,17 @@ public class FormationController : MonoBehaviour
         soldier.MoveNext();
 
         foreach (var pos in NextPos(positions)) {
-            if (pos.Item1 > ranks) { ranks = pos.Item1; }
-            if (pos.Item2 > files) { files = pos.Item2; }
+            if (pos.rank > ranks) { ranks = pos.rank; }
+            if (pos.file > files) { files = pos.file; }
 
             var marker = Instantiate(
                 _ctrl.markerPrefab,
-                RankFileToPos(pos.Item1, pos.Item2),
+                Vector3.zero,
                 transform.rotation,
                 transform
             ).GetComponent<Marker>();
+            marker.spacing = spacing;
+            marker.SetPosition(pos);
 
             ((Soldier)soldier.Current).marker = marker.gameObject;
 
@@ -257,20 +265,17 @@ public class FormationController : MonoBehaviour
         ranks++;
         files++;
 
-        transform.position = transform.position + transform.right * (files - 1) * _ctrl.spacing / 2;
+        // Now that the formation is made, we need to center it on the position it was instantiated
+        // and back it up a little to the let the commander breath
+        transform.position += transform.right * width / 2;
+        transform.position += -transform.forward * 2;
 
         ChangeState(new Line());
     }
 
-    private Vector3 RankFileToPos(int rank, int file)
-    {
-        var zero = transform.position;
-        return zero - rank * transform.forward * _ctrl.spacing - file * transform.right * _ctrl.spacing;
-    }
-
     // Meat and potatoes of the formation generation function. This will walk through the formation
     // in position order defined in the table below.
-    IEnumerable<(int, int)> NextPos(int totalPos)
+    static IEnumerable<FormPos> NextPos(int totalPos)
     {
         /*  Basic idea is to fill out the first 3 ranks with 3 then go by file
          *  
@@ -282,7 +287,7 @@ public class FormationController : MonoBehaviour
         int file = 0;
 
         for (int i = 0; i < totalPos; ++i) {
-            yield return (rank, file);
+            yield return new FormPos(rank, file);
 
             if (i < 8) {
                 file++;
