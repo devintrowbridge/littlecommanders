@@ -104,9 +104,10 @@ public class FormationController : MonoBehaviour
         }
 
         foreach(var subdivision in sd) {
-            if (subdivision != null) Destroy(subdivision);
+            if (subdivision != null) {
+                Destroy(subdivision.gameObject);
+            }
         }
-
     }
 
     public void ForwardMarch()

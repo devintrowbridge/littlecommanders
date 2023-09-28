@@ -6,10 +6,12 @@ public class Subdivision : MonoBehaviour {
 
     public List<Marker> markers = new List<Marker>();
     private FormationController _ctrl;
-
+         
     int ranks;
     int files;
     Vector3 formationDim;
+
+    Vector3 pivotPoint;
 
     // Update is called once per frame
     void Update()
@@ -27,24 +29,25 @@ public class Subdivision : MonoBehaviour {
     public void ColumnDir(Vector3 newDir)
     {
         Vector3 formationTrueDim = _ctrl.spacing * (formationDim - new Vector3(1, 0, 1));
+        float angleDir = Vector3.SignedAngle(transform.forward, newDir, Vector3.up);
+        Debug.Log("signed angle " + angleDir);
 
         // Find the center of the formation and apply an offset to get the front of the formation
         var center = -new Vector3((files - 1) * _ctrl.spacing / 2, 0, (ranks - 1) * _ctrl.spacing / 2);
-        var pivotDir = Vector3.SignedAngle(transform.forward, newDir, Vector3.up) > 0 ? -transform.right : transform.right;
-        var offset = Vector3.Scale(transform.forward, formationTrueDim / 2);
+        var pivotDir = angleDir > 0 ? Vector3.right : -Vector3.right;
+        
+        // Push offset out to the edge of the formation in the forward direction
+        var offset = Vector3.Scale(Vector3.forward, formationTrueDim / 2);
+
+        // Push offset to the inside edge of the turn 
         offset += Vector3.Scale(pivotDir, formationTrueDim / 2);
+
+        // Combine offset with the center to get the pivot point
         var pivotPoint = center + offset;
 
-        var newSubd = new GameObject("new formation");
-        newSubd.transform.position = transform.position;
-        newSubd.transform.rotation = transform.rotation;
 
-        // Debugging
-        var frontObj = Instantiate(_ctrl.markerPrefab);
-        frontObj.transform.SetParent(transform);
-        frontObj.transform.localPosition = pivotPoint;
-        frontObj.name = "pivot point";
-        Debug.Log("front " + pivotPoint);
+        // rotate formation around pivot
+        transform.RotateAround(transform.TransformPoint(pivotPoint), Vector3.up, angleDir);
     }
 
     // Creates a marker in the formation for each Soldier to stand on
@@ -127,7 +130,7 @@ public class Subdivision : MonoBehaviour {
 
         foreach (var marker in markers) {
             marker.transform.parent = transform;
-            marker.transform.LookAt(transform.forward);
+            marker.transform.rotation = transform.rotation;
         }
     }
 }
