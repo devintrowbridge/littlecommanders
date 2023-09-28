@@ -7,6 +7,9 @@ using UnityEngine.Timeline;
 
 public class FormationController : MonoBehaviour
 {
+    public enum Face { Left, Right };
+    public Vector3 forward { private set; get; }
+
     public int maxPerRank = 30;
 
     public float yellDist = 10;
@@ -23,6 +26,8 @@ public class FormationController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        forward = transform.forward;
+
         Collider[] hits = Physics.OverlapSphere(transform.position, yellDist);
         foreach (var hit in hits) {
             if (hit.gameObject.CompareTag("Soldier")) {
@@ -32,15 +37,32 @@ public class FormationController : MonoBehaviour
             }
         }
         GenerateFormation();
+
+        if (mat != null) SetColor(mat);
     }
 
     private void Update()
     {
         if (forwardMarch) {
-            transform.Translate(Vector3.forward * forwardSpeed * Time.deltaTime);
+            transform.Translate(forwardSpeed * Time.deltaTime * forward, Space.World);
         }
     }
 
+    public void Turn(Face dir)
+    {
+        // left/right face
+        float ang = 90f;
+        if (dir == Face.Left) { ang *= -1; }
+
+        foreach (var marker in markers) {
+            marker.transform.Rotate(Vector3.up, ang);
+        }
+
+        forward = markers[0].transform.forward;
+    }
+
+    // Checks to see if any soldier in the formation is within yelling distance,
+    // If they are then the formation is commandable
     public bool InCommandRange(Vector3 position)
     {
         foreach (var sol in soldiers) {
@@ -52,6 +74,7 @@ public class FormationController : MonoBehaviour
         return false;
     }
 
+    // Creates a marker in the formation for each Soldier to stand on
     public void GenerateFormation() 
     {
         int positions = soldiers.Count;
@@ -71,10 +94,9 @@ public class FormationController : MonoBehaviour
             soldier.MoveNext();
         }
         transform.position = transform.position + transform.right * formationWidth / 2;
-
-        if (mat != null) SetColor(mat);
     }
 
+    // Returns the total width of the formation using the table below
     float FormationWidth(int totalPos)
     {
         if (totalPos == 1) return 0;
@@ -83,6 +105,8 @@ public class FormationController : MonoBehaviour
         return Mathf.Floor(totalPos / 3) * spacing;
     }
 
+    // Meat and potatoes of the formation generation function. This will walk through the formation
+    // in position order defined in the table below.
     IEnumerable<Vector3> NextPos(int totalPos)
     {
         /*  Basic idea is to fill out the first 3 ranks with 3 then go by file
@@ -96,7 +120,6 @@ public class FormationController : MonoBehaviour
         int file = 0;
 
         for (int i = 0; i < totalPos; ++i) {
-            Debug.Log("rank " + rank + " file " + file);
             yield return zero - rank * transform.forward * spacing - file * transform.right * spacing;
 
             if (i < 8) {
@@ -109,7 +132,7 @@ public class FormationController : MonoBehaviour
         }
     }
 
-
+    // We want the color of the soldiers in the formation to match the commander's colors
     public void SetColor(Material mat_)
     {
         mat = mat_;
@@ -129,14 +152,12 @@ public class FormationController : MonoBehaviour
     {
         forwardMarch = true;
         foreach (var marker in markers) {
-            marker.transform.Translate(Vector3.forward);
+            marker.transform.Translate(forward);
         }
-
     }
 
     public void Halt()
     {
         forwardMarch = false;
     }
-
 }

@@ -50,7 +50,7 @@ public class Soldier : MonoBehaviour
         }
 
         // If we're at the marker then stop moving and face forward
-        if (!TooFarFromMarker() && moving) {
+        if (!TooFarFromMarker()) {
             moving = false;
             Facing();
         }

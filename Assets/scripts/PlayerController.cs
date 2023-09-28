@@ -48,7 +48,7 @@ public class PlayerController : MonoBehaviour
 
         // Move with formation
         if (formation && followFormation && formation.forwardMarch) {
-            transform.Translate(formation.transform.forward * Constants.SOLDIER_BASE_MOVE_SPEED * Time.deltaTime);
+            transform.Translate(formation.forward * Constants.SOLDIER_BASE_MOVE_SPEED * Time.deltaTime);
         }
 
         // Look direction
@@ -71,6 +71,7 @@ public class PlayerController : MonoBehaviour
                 rot
             ).GetComponent<FormationController>();
             formation.SetColor(mat);
+            Follow();
         }
         else {
             Destroy(formation.gameObject);
@@ -110,7 +111,9 @@ public class PlayerController : MonoBehaviour
 
     private bool Commandable()
     {
-        return formation != null & formation.InCommandRange(transform.position);
+        if (formation != null & formation.InCommandRange(transform.position)) { return true; }
+        Debug.Log("Not Commandable");
+        return false;
     }
 
     public void CommandForwardMarch()
@@ -118,7 +121,7 @@ public class PlayerController : MonoBehaviour
         if (Commandable()) {
             formation.ForwardMarch();
             cmdMenu.SetActive(false);
-        }
+        } 
     }
     public void CommandHalt()
     {
@@ -128,12 +131,24 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void Follow()
+    public void CommandRight()
     {
         if (Commandable()) {
-            followFormation = !followFormation;
-            cmdMenu.SetActive(false);
+            formation.Turn(FormationController.Face.Right);
         }
+    }
+
+    public void CommandLeft()
+    {
+        if (Commandable()) {
+            formation.Turn(FormationController.Face.Left);
+        }
+    }
+
+    public void Follow()
+    {
+        followFormation = !followFormation;
+        cmdMenu.SetActive(false);
     }
 }
 
