@@ -46,12 +46,14 @@ public class Soldier : MonoBehaviour
 
         // If we're too far away and haven't start moving, then start moving
         if (TooFarFromMarker() && !moving) {
+            speed *= 1.5f; // catchup speed
             moving = true;
         }
 
         // If we're at the marker then stop moving and face forward
         if (!TooFarFromMarker()) {
             moving = false;
+            speed = Constants.SOLDIER_BASE_MOVE_SPEED;
             Facing();
         }
 

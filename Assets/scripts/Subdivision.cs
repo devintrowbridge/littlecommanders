@@ -30,7 +30,6 @@ public class Subdivision : MonoBehaviour {
     {
         Vector3 formationTrueDim = _ctrl.spacing * (formationDim - new Vector3(1, 0, 1));
         float angleDir = Vector3.SignedAngle(transform.forward, newDir, Vector3.up);
-        Debug.Log("signed angle " + angleDir);
 
         // Find the center of the formation and apply an offset to get the front of the formation
         var center = -new Vector3((files - 1) * _ctrl.spacing / 2, 0, (ranks - 1) * _ctrl.spacing / 2);
@@ -44,7 +43,6 @@ public class Subdivision : MonoBehaviour {
 
         // Combine offset with the center to get the pivot point
         var pivotPoint = center + offset;
-
 
         // rotate formation around pivot
         transform.RotateAround(transform.TransformPoint(pivotPoint), Vector3.up, angleDir);

@@ -1135,7 +1135,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 10
   accSpeed: 1
-  zoomSpeed: 100
+  zoomSpeed: 1000
   avatar: {fileID: 1609098257}
   formationPrefab: {fileID: 9152005660369089021, guid: 71496c59a6c232c488bd1760d5babd0e, type: 3}
   formationOffset: 6
