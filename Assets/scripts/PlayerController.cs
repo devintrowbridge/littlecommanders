@@ -11,13 +11,16 @@ public class PlayerController : MonoBehaviour
     public float zoomSpeed = 1f;
     public GameObject cam;
     public GameObject avatar;
+    public GameObject formationPrefab;
+
+    private GameObject formation;
+    public float formationOffset = 6f;
 
     public bool fallIn = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        avatar = transform.Find("Avatar").gameObject;
     }
 
     // Update is called once per frame
@@ -28,14 +31,26 @@ public class PlayerController : MonoBehaviour
         float vert = Input.GetAxis("Vertical");
         float zoom = Input.GetAxis("Mouse ScrollWheel");
 
-        transform.Translate(horz * moveSpeed * Time.deltaTime, 0, vert * moveSpeed * Time.deltaTime);
-        cam.transform.Translate(Vector3.forward * zoom * zoomSpeed * Time.deltaTime);
         var moveDirection = new Vector3(horz, 0, vert).normalized;
+
+        transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
+        cam.transform.Translate(Vector3.forward * zoom * zoomSpeed * Time.deltaTime);
         var lookDir = moveDirection + transform.position;
         avatar.transform.LookAt(lookDir);
+        avatar.transform.Rotate(0,transform.eulerAngles.y,0);
 
         if (Input.GetButtonDown("Fall In")) {
             fallIn = !fallIn;
+
+            if (fallIn) {
+                formation = Instantiate(
+                    formationPrefab, 
+                    avatar.transform.position + avatar.transform.forward * formationOffset, 
+                    avatar.transform.rotation);
+            } else {
+                Destroy(formation);
+                formation = null;
+            }
         }
     }
 }
