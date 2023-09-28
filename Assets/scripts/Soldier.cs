@@ -16,7 +16,7 @@ public class Soldier : MonoBehaviour
     private float journeyLength;
 
     public float maxDistanceFromMark = .5f;
-    private float distFromMark = 0;
+    private float tolerableDistFromMark = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -27,6 +27,7 @@ public class Soldier : MonoBehaviour
     void Update()
     {
         if (marker != null) GetOnMark();
+        else moving = false;
     }
 
     public void ClearColor()
@@ -45,7 +46,8 @@ public class Soldier : MonoBehaviour
 
         // If we're too far away and haven't start moving, then start moving
         if (TooFarFromMarker() && !moving) {
-            distFromMark = UnityEngine.Random.Range(.1f, maxDistanceFromMark);
+            Debug.Log("starting");
+            tolerableDistFromMark = UnityEngine.Random.Range(.1f, maxDistanceFromMark);
             start = transform.position;
             journeyLength = Vector3.Distance(start, marker.transform.position);
             startTime = Time.time;
@@ -53,24 +55,25 @@ public class Soldier : MonoBehaviour
         }
 
         // If we're at the marker then stop moving and face forward
-        if (!TooFarFromMarker()) {
+        if (!TooFarFromMarker() && moving) {
+            Debug.Log("stopping");
             moving = false;
             Facing();
         }
 
         // If we are moving, then lerp our way over to the marker
         if (moving) {
+            Debug.Log("Moving");
             float distCovered = (Time.time - startTime) * speed;
             float fractionOfJourney = distCovered / journeyLength;
             transform.position = Vector3.Lerp(start, end, fractionOfJourney);
             transform.LookAt(end);
-            transform.Rotate(0, transform.eulerAngles.y, 0);
         }
     }
 
     bool TooFarFromMarker()
     {
-        return (transform.position - end).magnitude > distFromMark;
+        return (transform.position - end).magnitude > tolerableDistFromMark;
     }
 
     void Facing()
