@@ -36,6 +36,20 @@ public class Soldier : MonoBehaviour
         gunshot.Play();
         gunsmoke.Play();
         gunspark.Play();
+
+        var raycast = Physics.Raycast(
+            transform.position,
+            transform.forward,
+            out var hit,
+            Mathf.Infinity,
+            Constants.LAYER_SOLDIER
+        );
+
+
+        if (raycast) {
+            Debug.DrawRay(transform.position, transform.forward * hit.distance, Color.yellow);
+            Debug.Log("Did Hit");
+        }
     }
 
     public void Fire()

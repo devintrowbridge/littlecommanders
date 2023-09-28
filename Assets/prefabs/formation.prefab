@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxPerRank: 30
-  yellDist: 100
+  yellDist: 10
   markerPrefab: {fileID: 3711561821500457441, guid: 51e28718852f65341b9dfa977d856ed7, type: 3}
   subdivisionPrefab: {fileID: 7572656675121297788, guid: 85062231febbd7f4e9eff2806e85fc62, type: 3}
   spacing: 2

@@ -6,11 +6,12 @@ TagManager:
   tags:
   - Marker
   - Soldier
+  - FxTemporaire
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Soldiers
   - Water
   - UI
   - 

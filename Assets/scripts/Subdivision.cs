@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Subdivision : MonoBehaviour {
+    enum FormationType
+    {
+        Line, Column
+    }
+
+    private FormationType formationType;
 
     public List<Marker> markers = new List<Marker>();
     private FormationController _ctrl;
@@ -24,6 +30,7 @@ public class Subdivision : MonoBehaviour {
     public void Initialize(FormationController ctrl)
     {
         _ctrl = ctrl;
+        formationType = FormationType.Line;
     }
 
     public void ColumnDir(Vector3 newDir)
@@ -120,20 +127,41 @@ public class Subdivision : MonoBehaviour {
         float ang = 90f;
         if (dir == FormationController.Direction.Left) { ang *= -1; }
 
+        // Rotate all of the markers as well as the parent so forward is the same for everything
         foreach (var marker in markers) {
             marker.transform.parent = null;
         }
-
         transform.Rotate(Vector3.up, ang);
-
         foreach (var marker in markers) {
             marker.transform.parent = transform;
             marker.transform.rotation = transform.rotation;
         }
+
+        // swap the formation dims so they still make sense
+        (formationDim.x, formationDim.y) = (formationDim.y, formationDim.x);
     }
 
-    public void Fire()
+    List<Soldier> GetFront()
     {
+        var front = new List<Soldier>();
 
+        var xComp = new Vector3(formationDim.x, 0, 0);
+        var centerFront = transform.position + xComp / 2;
+        Collider[] hitColliders = Physics.OverlapBox(
+            centerFront, 
+            xComp / 2, 
+            Quaternion.identity, 
+            Constants.LAYER_SOLDIER
+        );
+
+        foreach ( var hit in hitColliders ) {
+            Debug.Log("Hit: " + hit.name);
+            var s = hit.gameObject.GetComponent<Soldier>();
+            if ( s != null ) {
+                front.Add(s);
+            }
+        }
+
+        return front;
     }
 }
