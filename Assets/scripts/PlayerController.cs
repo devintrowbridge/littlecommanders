@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 10f;
     public float accSpeed = 10f;
     public float zoomSpeed = 1f;
-    public GameObject cam;
+    private Camera cam;
     public GameObject avatar;
     public GameObject formationPrefab;
 
@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        cam = Camera.main;
     }
 
     // Update is called once per frame
@@ -42,8 +43,9 @@ public class PlayerController : MonoBehaviour
 
         // move in direction of inputs
         transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
-        avatar.transform.LookAt(lookDir);
-        avatar.transform.Rotate(0,transform.eulerAngles.y,0);
+
+        // Look direction
+        Aim();
 
         if (Input.GetButtonUp("Fall In")) {
             fallIn = !fallIn;
@@ -61,6 +63,36 @@ public class PlayerController : MonoBehaviour
                 Destroy(formation.gameObject);
                 formation = null;
             }
+        }
+    }
+
+    private void Aim()
+    {
+        var (success, position) = GetMousePosition();
+        if (success) {
+            // Calculate the direction
+            var direction = position - avatar.transform.position;
+
+            // You might want to delete this line.
+            // Ignore the height difference.
+            direction.y = 0;
+
+            // Make the transform look in the direction.
+            avatar.transform.forward = direction;
+        }
+    }
+
+    private (bool success, Vector3 position) GetMousePosition()
+    {
+        var ray = cam.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out var hitInfo, Mathf.Infinity)) {
+            // The Raycast hit something, return with the position.
+            return (success: true, position: hitInfo.point);
+        }
+        else {
+            // The Raycast did not hit anything.
+            return (success: false, position: Vector3.zero);
         }
     }
 }
@@ -81,6 +113,7 @@ public class PlayerController : MonoBehaviour
  * 
  * Direction Change
  *  • Column Left/Right
+ *  • Left and Right Face
  *  
  * Dispersion (close, normal, open) these two move through them
  *  • Open Ranks
