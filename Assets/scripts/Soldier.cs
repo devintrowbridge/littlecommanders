@@ -14,6 +14,7 @@ public class Soldier : MonoBehaviour
     private float tolerableDistFromMark = 0;
 
     private Gun gun;
+    private bool isDead = false;
 
     public delegate void Callback(Soldier s);
 
@@ -47,7 +48,7 @@ public class Soldier : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        if (marker != null) GetOnMark();
+        if (!isDead && marker != null) GetOnMark();
         else {
             moving = false;
         }
@@ -97,9 +98,16 @@ public class Soldier : MonoBehaviour
         transform.rotation = marker.transform.rotation;
     }
 
-    public void Die()
+    private void Die()
     {
         transform.eulerAngles = new Vector3(90f,0,0);
+        SetColor(Color.red);
+        isDead = true;
         Destroy(marker);
+    }
+
+    public void Hit()
+    {
+        Die();
     }
 }
