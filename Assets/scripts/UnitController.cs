@@ -77,8 +77,8 @@ public class UnitController : MonoBehaviour
     // If they are then the formation is commandable
     public bool InCommandRange(Vector3 position)
     {
-        foreach (var sol in soldiers) {
-            if (Vector3.Distance(sol.gameObject.transform.position, position) < yellDist) {
+        foreach (var s in soldiers) {
+            if (Vector3.Distance(s.gameObject.transform.position, position) < yellDist) {
                 return true;
             }
         }
@@ -119,12 +119,8 @@ public class UnitController : MonoBehaviour
 
     public IEnumerator Fire()
     {
-        // Can't fire if we're moving
-        if (forwardMarch) yield break;
-
-        // Move into volley formation
+        Halt();
         formation.state.MoveToFire();
-
         yield return new WaitForSeconds(1);
 
         // Give command to fire

@@ -32,6 +32,7 @@ public class Soldier : MonoBehaviour
 
     public void Fire()
     {
+        if (moving) { return; }
         var delay = Random.Range(0f, 1f);
         StartCoroutine(Fire(delay));
     }
@@ -94,5 +95,11 @@ public class Soldier : MonoBehaviour
     void Facing()
     {
         transform.rotation = marker.transform.rotation;
+    }
+
+    public void Die()
+    {
+        transform.eulerAngles = new Vector3(90f,0,0);
+        Destroy(marker);
     }
 }
