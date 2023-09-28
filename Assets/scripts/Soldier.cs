@@ -18,6 +18,7 @@ public class Soldier : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        tolerableDistFromMark = UnityEngine.Random.Range(.1f, maxDistanceFromMark);
     }
 
     // Update is called once per frame
@@ -45,7 +46,6 @@ public class Soldier : MonoBehaviour
 
         // If we're too far away and haven't start moving, then start moving
         if (TooFarFromMarker() && !moving) {
-            tolerableDistFromMark = UnityEngine.Random.Range(.1f, maxDistanceFromMark);
             moving = true;
         }
 

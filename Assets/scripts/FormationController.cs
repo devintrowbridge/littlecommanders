@@ -2,33 +2,54 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.Timeline;
+using UnityEngine.UIElements;
 
 public class FormationController : MonoBehaviour
 {
-    public enum Face { Left, Right };
-    public Vector3 forward { private set; get; }
+    public enum Direction { Left, Right };
 
     public int maxPerRank = 30;
 
     public float yellDist = 10;
     public GameObject markerPrefab;
-    public float spacing = 2f;
+    public GameObject subdivisionPrefab;
 
     private Material mat;
     private List<Soldier> soldiers = new List<Soldier>();
-    private List<GameObject> markers = new List<GameObject>();
+
+    private List<Subdivision> sd = new List<Subdivision>();
 
     public bool forwardMarch { private set; get;  }
-    private float forwardSpeed = Constants.SOLDIER_BASE_MOVE_SPEED;
+    public float forwardSpeed { private set; get; } = Constants.SOLDIER_BASE_MOVE_SPEED;
+    public float spacing = 2f;
+
+    public Vector3 forward {
+        private set { }  
+        get
+        {
+            return sd[0].transform.forward;
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        forward = transform.forward;
+        // Create a subdivision 
+        var subd = Instantiate(
+            subdivisionPrefab,
+            transform.position,
+            transform.rotation
+        ).GetComponent<Subdivision>();
+        subd.Initialize(this);
+        transform.position = Vector3.zero;
+        transform.eulerAngles = Vector3.zero;
+        sd.Add(subd);
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, yellDist);
+        // See what soldiers are around
+        Collider[] hits = Physics.OverlapSphere(sd[0].transform.position, yellDist);
         foreach (var hit in hits) {
             if (hit.gameObject.CompareTag("Soldier")) {
                 var soldier = hit.gameObject.GetComponent<Soldier>();
@@ -36,29 +57,22 @@ public class FormationController : MonoBehaviour
                 forwardSpeed = soldier.speed;
             }
         }
-        GenerateFormation();
 
+        // Put them in the formation
+        subd.GenerateFormation(soldiers);
         if (mat != null) SetColor(mat);
     }
 
-    private void Update()
+    public void ColumnDir(Vector3 newDir)
     {
-        if (forwardMarch) {
-            transform.Translate(forwardSpeed * Time.deltaTime * forward, Space.World);
-        }
+        sd[0].ColumnDir(newDir);
     }
 
-    public void Turn(Face dir)
+    public void Face(Direction dir)
     {
-        // left/right face
-        float ang = 90f;
-        if (dir == Face.Left) { ang *= -1; }
-
-        foreach (var marker in markers) {
-            marker.transform.Rotate(Vector3.up, ang);
+        foreach (var subd in sd) {
+            subd.Face(dir);
         }
-
-        forward = markers[0].transform.forward;
     }
 
     // Checks to see if any soldier in the formation is within yelling distance,
@@ -72,64 +86,6 @@ public class FormationController : MonoBehaviour
         }
 
         return false;
-    }
-
-    // Creates a marker in the formation for each Soldier to stand on
-    public void GenerateFormation() 
-    {
-        int positions = soldiers.Count;
-        IEnumerator soldier = soldiers.GetEnumerator();
-        soldier.MoveNext();
-
-        float formationWidth = FormationWidth(positions);
-
-        foreach (var pos in NextPos(positions)) {
-            var marker = Instantiate(
-                markerPrefab,
-                pos,
-                transform.rotation,
-                transform);
-            ((Soldier)soldier.Current).marker = marker;
-            markers.Add(marker);
-            soldier.MoveNext();
-        }
-        transform.position = transform.position + transform.right * formationWidth / 2;
-    }
-
-    // Returns the total width of the formation using the table below
-    float FormationWidth(int totalPos)
-    {
-        if (totalPos == 1) return 0;
-        if (totalPos == 2) return 1 * spacing;
-        if (totalPos <= 9) return 2 * spacing;
-        return Mathf.Floor(totalPos / 3) * spacing;
-    }
-
-    // Meat and potatoes of the formation generation function. This will walk through the formation
-    // in position order defined in the table below.
-    IEnumerable<Vector3> NextPos(int totalPos)
-    {
-        /*  Basic idea is to fill out the first 3 ranks with 3 then go by file
-         *  
-         *  7 | 8 | 9 | 12 | 15  | ... | 90 |
-         *  4 | 5 | 6 | 11 | 14  | ... | 89 |
-         *  1 | 2 | 3 | 10 | 13  | ... | 88 |
-         */
-        var zero = transform.position;
-        int rank = 0;
-        int file = 0;
-
-        for (int i = 0; i < totalPos; ++i) {
-            yield return zero - rank * transform.forward * spacing - file * transform.right * spacing;
-
-            if (i < 8) {
-                file++;
-                if (file > 2) { rank++; file = 0; }
-            } else {
-                rank++;
-                if (rank > 2) { file++; rank = 0; }
-            }
-        }
     }
 
     // We want the color of the soldiers in the formation to match the commander's colors
@@ -146,14 +102,16 @@ public class FormationController : MonoBehaviour
         foreach (var soldier in soldiers) {
             if (soldier != null) soldier.ClearColor();
         }
+
+        foreach(var subdivision in sd) {
+            if (subdivision != null) Destroy(subdivision);
+        }
+
     }
 
     public void ForwardMarch()
     {
         forwardMarch = true;
-        foreach (var marker in markers) {
-            marker.transform.Translate(forward);
-        }
     }
 
     public void Halt()

@@ -53,6 +53,18 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetButtonUp("Fall In")) FallIn();
         if (Input.GetButtonDown("Command Menu") && Commandable()) cmdMenu.SetActive(!cmdMenu.activeSelf);
+        if (Input.GetButtonUp("Column March")) ColumnMarch();
+    }
+
+    private void ColumnMarch()
+    {
+        if (!Commandable()) return;
+        var (success, position) = GetMousePosition();
+        if (!success) return;
+
+        var direction = position - avatar.transform.position;
+        direction.y = 0;
+        formation.ColumnDir(direction.normalized);
     }
     
     private void FallIn()
@@ -122,14 +134,13 @@ public class PlayerController : MonoBehaviour
     public void CommandRight()
     {
         if (Commandable()) {
-            formation.Turn(FormationController.Face.Right);
+            formation.Face(FormationController.Direction.Right);
         }
     }
-
     public void CommandLeft()
     {
         if (Commandable()) {
-            formation.Turn(FormationController.Face.Left);
+            formation.Face(FormationController.Direction.Left);
         }
     }
 }
