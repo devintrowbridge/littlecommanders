@@ -25,23 +25,21 @@ public class FindMarker : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Debug.Log(marker);
         if (marker != null) {
+            end = marker.transform.position;
+            end.y = start.y;
+            
             // If we're too far away and haven't start moving, then start moving
             if (TooFarFromMarker() && !moving) {
-                Debug.Log("started");
                 start = transform.position;
-                end = marker.transform.position;
-                end.y = start.y;
                 journeyLength = Vector3.Distance(start, marker.transform.position);
-
                 startTime = Time.time;
                 moving = true;
             }
 
             // If we're at the marker then stop moving
             if (!TooFarFromMarker()) {
-
-                Debug.Log("Done moving");
                 moving = false;
             }
 

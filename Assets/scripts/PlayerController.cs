@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
         avatar.transform.LookAt(lookDir);
         avatar.transform.Rotate(0,transform.eulerAngles.y,0);
 
-        if (Input.GetButtonDown("Fall In")) {
+        if (Input.GetButtonUp("Fall In")) {
             fallIn = !fallIn;
 
             if (fallIn) {
