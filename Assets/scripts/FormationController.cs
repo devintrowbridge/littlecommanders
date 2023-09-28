@@ -14,11 +14,6 @@ public abstract class AFormation
 
     public virtual void OnEnter(FormationController fc) {
         _fc = fc;
-
-        var formationDim = new Vector3(_fc.files, 0, _fc.ranks);
-        var localCenter = (formationDim - new Vector3(1, 0, 1)) * _fc._ctrl.spacing / 2;
-        _fc._center.transform.position = _fc.transform.TransformPoint(-localCenter);
-        _fc._center.transform.rotation = _fc.transform.rotation;
     }
 
     public virtual void UpdateState() 
@@ -129,7 +124,6 @@ public class Line : AFormation
         if (ranksCol.Count > 0) {
             foreach (var marker in ranksCol[0]) {
                 marker.lastPos = marker.transform.position;
-
                 marker.transform.position += Vector3.down * 1.2f;
             }
         }
@@ -213,8 +207,6 @@ public class FormationController : MonoBehaviour
 
         _center = new GameObject();
         _center.transform.parent = transform;
-        _center.transform.position = transform.position;
-        _center.transform.rotation = transform.rotation;
         _center.name = "center";
     }
 
@@ -247,10 +239,10 @@ public class FormationController : MonoBehaviour
 
         transform.position = transform.position + transform.right * (files - 1) * _ctrl.spacing / 2;
 
-        // set the center
+        // get initial position of center
         var formationDim = new Vector3(files, 0, ranks);
-        var localCenter = (formationDim - new Vector3(1, 0, 1)) * _ctrl.spacing / 2;
-        _center.transform.position = transform.TransformPoint(-localCenter);
+        var localCenter = -(formationDim - new Vector3(1, 0, 1)) * _ctrl.spacing / 2;
+        _center.transform.position = transform.TransformPoint(localCenter);
         _center.transform.rotation = transform.rotation;
 
         ChangeState(new Line());
