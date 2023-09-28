@@ -13,7 +13,6 @@ public class Commander : MonoBehaviour {
 
     public Material mat;
 
-    public GameObject cmdMenu;
     public float maxCommandDist = 10f;
 
 
@@ -83,7 +82,6 @@ public class Commander : MonoBehaviour {
     {
         if (Commandable()) {
             unit.ForwardMarch();
-            cmdMenu.SetActive(false);
         }
     }
 
@@ -91,7 +89,6 @@ public class Commander : MonoBehaviour {
     {
         if (Commandable()) {
             unit.Halt();
-            cmdMenu.SetActive(false);
         }
     }
 

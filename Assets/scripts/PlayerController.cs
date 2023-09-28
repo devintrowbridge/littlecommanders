@@ -4,6 +4,7 @@ public class PlayerController : Commander
 { 
     public float zoomSpeed = 1f;
     private Camera cam;
+    public GameObject cmdMenu;
 
     // Start is called before the first frame update
     void Start()
@@ -58,6 +59,19 @@ protected override void LateUpdate()
         // The Raycast did not hit anything.
         return null;
     }
+
+    public override void CommandForwardMarch()
+    {
+        base.CommandForwardMarch();
+        cmdMenu.SetActive(false);
+    }
+
+    public override void CommandHalt()
+    {
+        base.CommandHalt();
+        cmdMenu.SetActive(false);
+    }
+
 }
 
 /* Facing movements
