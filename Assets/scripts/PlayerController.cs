@@ -16,9 +16,6 @@ public class PlayerController : MonoBehaviour
 
     private FormationController formation;
     public float formationOffset = 6f;
-    private bool followFormation = false;
-
-    public bool fallIn = false;
 
     public Material mat;
 
@@ -47,7 +44,7 @@ public class PlayerController : MonoBehaviour
         transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
 
         // Move with formation
-        if (formation && followFormation && formation.forwardMarch) {
+        if (formation && formation.forwardMarch) {
             transform.Translate(formation.forward * Constants.SOLDIER_BASE_MOVE_SPEED * Time.deltaTime);
         }
 
@@ -60,23 +57,14 @@ public class PlayerController : MonoBehaviour
     
     private void FallIn()
     {
-        fallIn = !fallIn;
+        if (formation != null) { Destroy(formation.gameObject); }
 
-        if (fallIn) {
-            var rot = Quaternion.LookRotation(-avatar.transform.forward, Vector3.up);
-
-            formation = Instantiate(
-                formationPrefab,
-                avatar.transform.position + avatar.transform.forward * formationOffset,
-                rot
-            ).GetComponent<FormationController>();
-            formation.SetColor(mat);
-            Follow();
-        }
-        else {
-            Destroy(formation.gameObject);
-            formation = null;
-        }
+        var rot = Quaternion.LookRotation(-avatar.transform.forward, Vector3.up);
+        formation = Instantiate(
+            formationPrefab,
+            avatar.transform.position + avatar.transform.forward * formationOffset,
+            rot
+        ).GetComponent<FormationController>();
     }
 
     private void Aim()
@@ -143,12 +131,6 @@ public class PlayerController : MonoBehaviour
         if (Commandable()) {
             formation.Turn(FormationController.Face.Left);
         }
-    }
-
-    public void Follow()
-    {
-        followFormation = !followFormation;
-        cmdMenu.SetActive(false);
     }
 }
 
