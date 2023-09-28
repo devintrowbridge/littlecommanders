@@ -322,7 +322,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   start: {x: 0, y: 0, z: 0}
   marker: {fileID: 0}
-  speed: 10
+  speed: 8
   acc: 10
   moving: 0
   maxDistanceFromMark: 0.5

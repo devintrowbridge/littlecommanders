@@ -14,8 +14,8 @@ public class FormationController : MonoBehaviour
     private List<Soldier> soldiers = new List<Soldier>();
     private List<GameObject> markers = new List<GameObject>();
 
-    private bool forwardMarch;
-    private float forwardSpeed = 100f;
+    public bool forwardMarch { private set; get;  }
+    private float forwardSpeed = Constants.SOLDIER_BASE_MOVE_SPEED;
 
     // Start is called before the first frame update
     void Start()
@@ -83,7 +83,7 @@ public class FormationController : MonoBehaviour
     {
         forwardMarch = true;
         foreach (var marker in markers) {
-            marker.transform.Translate(Vector3.forward * 5);
+            marker.transform.Translate(Vector3.forward);
         }
 
     }
@@ -92,4 +92,5 @@ public class FormationController : MonoBehaviour
     {
         forwardMarch = false;
     }
+
 }

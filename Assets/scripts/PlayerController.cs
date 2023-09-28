@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
 
     private FormationController formation;
     public float formationOffset = 6f;
+    private bool followFormation = false;
 
     public bool fallIn = false;
 
@@ -39,19 +40,22 @@ public class PlayerController : MonoBehaviour
         float vert = Input.GetAxis("Vertical");
         float zoom = Input.GetAxis("Mouse ScrollWheel");
 
-        var moveDirection = new Vector3(horz, 0, vert).normalized;
-
         cam.transform.Translate(Vector3.forward * zoom * zoomSpeed * Time.deltaTime);
-        var lookDir = moveDirection + transform.position;
 
         // move in direction of inputs
+        var moveDirection = new Vector3(horz, 0, vert).normalized;
         transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
+
+        // Move with formation
+        if (formation && followFormation && formation.forwardMarch) {
+            transform.Translate(formation.transform.forward * Constants.SOLDIER_BASE_MOVE_SPEED * Time.deltaTime);
+        }
 
         // Look direction
         Aim();
 
         if (Input.GetButtonUp("Fall In")) FallIn();
-        if (Input.GetButtonDown("Command Menu")) cmdMenu.SetActive(!cmdMenu.activeSelf);
+        if (Input.GetButtonDown("Command Menu") && Commandable()) cmdMenu.SetActive(!cmdMenu.activeSelf);
     }
     
     private void FallIn()
@@ -127,7 +131,8 @@ public class PlayerController : MonoBehaviour
     public void Follow()
     {
         if (Commandable()) {
-
+            followFormation = !followFormation;
+            cmdMenu.SetActive(false);
         }
     }
 }

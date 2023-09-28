@@ -9,8 +9,7 @@ public class Soldier : MonoBehaviour
     private Vector3 end;
     public GameObject marker;
 
-    public float speed = 10f;
-    public float acc = 10f;
+    public float speed = Constants.SOLDIER_BASE_MOVE_SPEED;
     public bool moving = false;
 
     public float maxDistanceFromMark = .5f;
@@ -46,21 +45,18 @@ public class Soldier : MonoBehaviour
 
         // If we're too far away and haven't start moving, then start moving
         if (TooFarFromMarker() && !moving) {
-            Debug.Log("starting");
             tolerableDistFromMark = UnityEngine.Random.Range(.1f, maxDistanceFromMark);
             moving = true;
         }
 
         // If we're at the marker then stop moving and face forward
         if (!TooFarFromMarker() && moving) {
-            Debug.Log("stopping");
             moving = false;
             Facing();
         }
 
         // If we are moving, then translate our way over to the marker
         if (moving) {
-            Debug.Log("Moving");
             transform.LookAt(end);
             transform.Translate(Vector3.forward * speed * Time.deltaTime);
         }
