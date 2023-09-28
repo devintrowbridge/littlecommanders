@@ -9,10 +9,11 @@ public class PlayerController : Commander
     void Start()
     {
         cam = Camera.main;
+        rotSpeed *= 5;
     }
 
-    // Update is called once per frame
-    protected override void LateUpdate()
+// Update is called once per frame
+protected override void LateUpdate()
     {
         base.LateUpdate();
 
@@ -32,25 +33,30 @@ public class PlayerController : Commander
         if (Input.GetButtonUp("Column March")) ColumnMarch();
         if (Input.GetButtonDown("Fire") && !cmdMenu.activeSelf) Fire();
         if (Input.GetButtonDown("Reload")) Reload();
+
+        var mousePos = GetMousePosition();
+        if (mousePos != null) Aim((Vector3) mousePos);
     }
 
-    private (bool success, Vector3 position) GetMousePosition()
+    private void ColumnMarch()
+    {
+        var position = GetMousePosition();
+        if (position == null) return;
+        var direction = (Vector3) position - avatar.transform.position;
+        base.ColumnMarch(direction);
+    }
+
+    private Vector3? GetMousePosition()
     {
         var ray = cam.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.Raycast(ray, out var hitInfo, Mathf.Infinity)) {
             // The Raycast hit something, return with the position.
-            return (success: true, position: hitInfo.point);
+            return hitInfo.point;
         }
-        else {
-            // The Raycast did not hit anything.
-            return (success: false, position: Vector3.zero);
-        }
-    }
 
-    protected override (bool success, Vector3 position) GetLookPosition()
-    {
-        return GetMousePosition();
+        // The Raycast did not hit anything.
+        return null;
     }
 }
 

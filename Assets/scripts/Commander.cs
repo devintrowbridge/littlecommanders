@@ -1,8 +1,9 @@
 using UnityEngine;
 
-public abstract class Commander : MonoBehaviour {
+public class Commander : MonoBehaviour {
     public float moveSpeed = 10f;
     public float accSpeed = 10f;
+    public float rotSpeed = Constants.SOLDIER_BASE_ROT_SPEED;
 
     public GameObject avatar;
     public GameObject unitPrefab;
@@ -16,17 +17,12 @@ public abstract class Commander : MonoBehaviour {
     public float maxCommandDist = 10f;
 
 
-    protected abstract (bool success, Vector3 position) GetLookPosition();
-
     protected virtual void LateUpdate()
     {
         // Move with unit
         if (unit && unit.forwardMarch) {
             transform.Translate(unit.travelVec);
         }
-
-        // Look direction
-        Aim();
     }
 
     protected virtual void Fire()
@@ -41,13 +37,9 @@ public abstract class Commander : MonoBehaviour {
         unit.Reload();
     }
 
-    protected virtual void ColumnMarch()
+    protected virtual void ColumnMarch(Vector3 direction)
     {
         if (!Commandable()) return;
-        var (success, position) = GetLookPosition();
-        if (!success) return;
-
-        var direction = position - avatar.transform.position;
         direction.y = 0;
         unit.ColumnDir(direction.normalized);
     }
@@ -65,20 +57,19 @@ public abstract class Commander : MonoBehaviour {
         unit.name = "UnitController";
     }
 
-    protected virtual void Aim()
+    protected virtual void Aim(Vector3 lookPosition)
     {
-        var (success, position) = GetLookPosition();
-        if (success) {
-            // Calculate the direction
-            var direction = position - avatar.transform.position;
+        if (lookPosition == null) return;
 
-            // You might want to delete this line.
-            // Ignore the height difference.
-            direction.y = 0;
+        // Calculate the direction
+        var direction = lookPosition - avatar.transform.position;
 
-            // Make the transform look in the direction.
-            avatar.transform.forward = direction;
-        }
+        // You might want to delete this line.
+        // Ignore the height difference.
+        direction.y = 0;
+
+        var lookRot = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
+        avatar.transform.rotation = Quaternion.Slerp(avatar.transform.rotation, lookRot, Time.deltaTime * rotSpeed);
     }
 
     protected virtual bool Commandable()

@@ -9,7 +9,7 @@ public class Soldier : MonoBehaviour
 
     private float maxSpeed = Constants.SOLDIER_MAX_MOVE_SPEED;
     private Vector3 velocity = Vector3.zero;
-    private float rotSpeed = 10;
+    private float rotSpeed = Constants.SOLDIER_BASE_ROT_SPEED;
     public bool moving = false;
 
     public float maxDistanceFromMark = .5f;
