@@ -119,4 +119,13 @@ public class FormationController : MonoBehaviour
     {
         forwardMarch = false;
     }
+
+    public void Fire()
+    {
+        foreach (var soldier in soldiers) {
+            if (soldier != null) {
+                soldier.Fire();
+            }
+        }
+    }
 }

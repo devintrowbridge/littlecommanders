@@ -54,6 +54,14 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonUp("Fall In")) FallIn();
         if (Input.GetButtonDown("Command Menu") && Commandable()) cmdMenu.SetActive(!cmdMenu.activeSelf);
         if (Input.GetButtonUp("Column March")) ColumnMarch();
+        if (Input.GetButtonDown("Fire")) Fire();
+    }
+
+    private void Fire()
+    {
+        if (formation == null) return;
+
+        formation.Fire();
     }
 
     private void ColumnMarch()

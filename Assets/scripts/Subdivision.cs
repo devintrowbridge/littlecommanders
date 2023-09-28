@@ -131,4 +131,9 @@ public class Subdivision : MonoBehaviour {
             marker.transform.rotation = transform.rotation;
         }
     }
+
+    public void Fire()
+    {
+
+    }
 }

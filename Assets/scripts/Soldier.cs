@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class Soldier : MonoBehaviour
 {
@@ -15,10 +16,32 @@ public class Soldier : MonoBehaviour
     public float maxDistanceFromMark = .5f;
     private float tolerableDistFromMark = 0;
 
+    private AudioSource gunshot;
+    private ParticleSystem gunsmoke;
+    private ParticleSystem gunspark;
+
+
     // Start is called before the first frame update
     void Start()
     {
         tolerableDistFromMark = UnityEngine.Random.Range(.1f, maxDistanceFromMark);
+        gunshot = transform.Find("Gun/Gunshot").GetComponent<AudioSource>();
+        gunsmoke = transform.Find("Gun/Gunsmoke").GetComponent<ParticleSystem>();
+        gunspark = transform.Find("Gun/Gunspark").GetComponent<ParticleSystem>();
+    }
+
+    private IEnumerator Fire(float delay)
+    {
+        yield return new WaitForSeconds(UnityEngine.Random.Range(0f, delay));
+        gunshot.Play();
+        gunsmoke.Play();
+        gunspark.Play();
+    }
+
+    public void Fire()
+    {
+        var delay = UnityEngine.Random.Range(0f, 1f);
+        StartCoroutine(Fire(delay));
     }
 
     // Update is called once per frame
