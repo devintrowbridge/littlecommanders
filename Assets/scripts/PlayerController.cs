@@ -7,16 +7,20 @@ using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 1f;
+    public float moveSpeed = 10f;
+    public float accSpeed = 10f;
     public float zoomSpeed = 1f;
     public GameObject cam;
     public GameObject avatar;
     public GameObject formationPrefab;
 
-    private GameObject formation;
+    private FormationController formation;
     public float formationOffset = 6f;
 
     public bool fallIn = false;
+
+    public Material mat;
+
 
     // Start is called before the first frame update
     void Start()
@@ -33,9 +37,11 @@ public class PlayerController : MonoBehaviour
 
         var moveDirection = new Vector3(horz, 0, vert).normalized;
 
-        transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
         cam.transform.Translate(Vector3.forward * zoom * zoomSpeed * Time.deltaTime);
         var lookDir = moveDirection + transform.position;
+
+        // move in direction of inputs
+        transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
         avatar.transform.LookAt(lookDir);
         avatar.transform.Rotate(0,transform.eulerAngles.y,0);
 
@@ -43,14 +49,45 @@ public class PlayerController : MonoBehaviour
             fallIn = !fallIn;
 
             if (fallIn) {
+                var rot = Quaternion.LookRotation(- avatar.transform.forward, Vector3.up);
+
                 formation = Instantiate(
                     formationPrefab, 
-                    avatar.transform.position + avatar.transform.forward * formationOffset, 
-                    Quaternion.Inverse(avatar.transform.rotation));
+                    avatar.transform.position + avatar.transform.forward * formationOffset,
+                    rot
+                ).GetComponent<FormationController>();
+                formation.SetColor(mat);
             } else {
-                Destroy(formation);
+                Destroy(formation.gameObject);
                 formation = null;
             }
         }
     }
 }
+
+/* Facing movements
+ * 
+ * Movement
+ *  • forward march
+ *  • halt
+ *  • charge
+ *  • retreat
+ * 
+ * Firing
+ *  • Fire
+ *  • Fire at will
+ *  • Cease Fire
+ *  • Fix Bayonets
+ * 
+ * Direction Change
+ *  • Column Left/Right
+ *  
+ * Dispersion (close, normal, open) these two move through them
+ *  • Open Ranks
+ *  • Close Ranks
+ *  
+ * Formations
+ *  • Line
+ *  • Column
+ *  • Square
+ */

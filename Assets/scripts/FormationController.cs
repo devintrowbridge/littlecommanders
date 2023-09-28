@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class FormationSpawner : MonoBehaviour
+public class FormationController : MonoBehaviour
 {
     public float yellDist = 10;
     public GameObject markerPrefab;
     public float spacing = 2f;
 
-    private List<FindMarker> soldiers = new List<FindMarker>();
+    private Material mat;
+    private List<Soldier> soldiers = new List<Soldier>();
 
     // Start is called before the first frame update
     void Start()
@@ -17,16 +18,15 @@ public class FormationSpawner : MonoBehaviour
         Collider[] hits = Physics.OverlapSphere(transform.position, yellDist);
         foreach (var hit in hits) {
             if (hit.gameObject.CompareTag("Soldier")) {
-                var findmark = hit.gameObject.GetComponent<FindMarker>();
-                soldiers.Add(findmark);
+                var soldier = hit.gameObject.GetComponent<Soldier>();
+                soldiers.Add(soldier);
             }
         }
-
         GenerateFormation();
     }
 
-    void GenerateFormation() 
-    { 
+    public void GenerateFormation() 
+    {
         int positions = soldiers.Count;
         IEnumerator soldier = soldiers.GetEnumerator();
         soldier.MoveNext();
@@ -37,13 +37,30 @@ public class FormationSpawner : MonoBehaviour
 
         for (int position = 0; position < positions; ++position) {
             if (soldier.Current == null) break;
-            ((FindMarker)soldier.Current).marker = Instantiate(
+            ((Soldier)soldier.Current).marker = Instantiate(
                 markerPrefab, 
                 currPos, 
                 transform.rotation, 
                 transform);
             currPos += incrPos;
             soldier.MoveNext();
+        }
+
+        if (mat != null) SetColor(mat);
+    }
+
+    public void SetColor(Material mat_)
+    {
+        mat = mat_;
+        foreach (var soldier in soldiers) {
+            soldier.SetColor(mat);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        foreach (var soldier in soldiers) {
+            if (soldier != null) soldier.ClearColor();
         }
     }
 }
