@@ -1,13 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Timeline;
-using UnityEngine.UIElements;
-using static FormationController;
-using static UnityEditor.PlayerSettings;
-using static UnityEngine.UI.Image;
 
 public abstract class AFormation 
 {
@@ -26,7 +19,7 @@ public abstract class AFormation
 
     public virtual void OnExit() { }
 
-    Vector3 getNewOriginWorld(UnitController.Direction dir)
+    private Vector3 getNewOrigin(UnitController.Direction dir)
     {
         // The origin of the formation is rank 1, file 1.
         // Positive z/forward is the direction the formation is facing
@@ -58,7 +51,7 @@ public abstract class AFormation
             marker.transform.parent = null;
         }
 
-        var newOrigin = getNewOriginWorld(dir);
+        var newOrigin = getNewOrigin(dir);
         _fc.transform.Rotate(Vector3.up, ang);
         _fc.transform.position = newOrigin;
 

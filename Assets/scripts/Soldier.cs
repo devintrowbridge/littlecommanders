@@ -1,8 +1,5 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.VFX;
 
 public class Soldier : MonoBehaviour
 {
@@ -23,26 +20,26 @@ public class Soldier : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        tolerableDistFromMark = UnityEngine.Random.Range(.1f, maxDistanceFromMark);
+        tolerableDistFromMark = Random.Range(.1f, maxDistanceFromMark);
         gun = transform.Find("Gun").GetComponent<Gun>();
     }
 
     private IEnumerator Fire(float delay)
     {
-        yield return new WaitForSeconds(UnityEngine.Random.Range(0f, delay));
+        yield return new WaitForSeconds(Random.Range(0f, delay));
         gun.Fire();
     }
 
     public void Fire()
     {
-        var delay = UnityEngine.Random.Range(0f, 1f);
+        var delay = Random.Range(0f, 1f);
         StartCoroutine(Fire(delay));
     }
 
     public void Reload()
     {
         Debug.Log("Reloading");
-        float reloadMultiplier = UnityEngine.Random.Range(.5f, 2f);
+        float reloadMultiplier = Random.Range(.5f, 2f);
         StartCoroutine(gun.Reload(reloadMultiplier));
     }
 
