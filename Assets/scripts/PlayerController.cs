@@ -40,7 +40,7 @@ public class PlayerController : MonoBehaviour
 
         // Move with unit
         if (unit && unit.forwardMarch) {
-            transform.Translate(unit.forward * Constants.SOLDIER_BASE_MOVE_SPEED * Time.deltaTime);
+            transform.Translate(unit.travelVec);
         }
 
         // Look direction

@@ -15,17 +15,25 @@ public class UnitController : MonoBehaviour
     private Material mat;
     private List<Soldier> soldiers = new List<Soldier>();
 
-    private List<FormationController> formations = new List<FormationController>();
+    private FormationController formation;
 
     public bool forwardMarch { private set; get;  }
-    public float forwardSpeed { private set; get; } = Constants.SOLDIER_BASE_MOVE_SPEED;
     public float spacing = 2f;
+    public Vector3 travelVec { 
+        get {
+            return formation.state.travelVec;
+        }
+
+        private set {
+            travelVec = value;
+        }
+    }
 
     public Vector3 forward {
         private set { }  
         get
         {
-            return formations[0].transform.forward;
+            return formation.transform.forward;
         }
     }
 
@@ -33,41 +41,37 @@ public class UnitController : MonoBehaviour
     void Start()
     {
         // Create a subdivision 
-        var form = Instantiate(
+        formation = Instantiate(
             subdivisionPrefab,
             transform.position,
             transform.rotation
         ).GetComponent<FormationController>();
-        form.Initialize(this);
+        formation.Initialize(this);
         transform.position = Vector3.zero;
         transform.eulerAngles = Vector3.zero;
-        formations.Add(form);
 
         // See what soldiers are around
-        Collider[] hits = Physics.OverlapSphere(formations[0].transform.position, yellDist);
+        Collider[] hits = Physics.OverlapSphere(formation.transform.position, yellDist);
         foreach (var hit in hits) {
             if (hit.gameObject.CompareTag("Soldier")) {
                 var soldier = hit.gameObject.GetComponent<Soldier>();
                 soldiers.Add(soldier);
-                forwardSpeed = soldier.speed;
             }
         }
 
         // Put them in the formation
-        form.GenerateFormation(soldiers);
+        formation.GenerateFormation(soldiers);
         if (mat != null) SetColor(mat);
     }
 
     public void ColumnDir(Vector3 newDir)
     {
-        formations[0].state.ColumnDir(newDir);
+        formation.state.ColumnDir(newDir);
     }
 
     public void Face(Direction dir)
     {
-        foreach (var f in formations) {
-            f.state.Face(dir);
-        }
+        formation.state.Face(dir);
     }
 
     // Checks to see if any soldier in the formation is within yelling distance,
@@ -98,18 +102,14 @@ public class UnitController : MonoBehaviour
             if (soldier != null) soldier.ClearColor();
         }
 
-        foreach(var f in formations) {
-            if (f != null) {
-                Destroy(f.gameObject);
-            }
+        if (formation != null) {
+            Destroy(formation.gameObject);
         }
     }
 
     public void ForwardMarch()
     {
-        foreach (var f in formations) {
-            f.state.ResetFormation();
-        }
+        formation.state.ResetFormation();
         forwardMarch = true;
     }
 
@@ -124,9 +124,7 @@ public class UnitController : MonoBehaviour
         if (forwardMarch) yield break;
 
         // Move into volley formation
-        foreach (var f in formations) {
-            f.state.MoveToFire();
-        }
+        formation.state.MoveToFire();
 
         yield return new WaitForSeconds(1);
 

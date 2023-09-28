@@ -5,15 +5,19 @@ using UnityEngine;
 public abstract class AFormation 
 {
     protected FormationController _fc;
+    protected float speedMultiplier;
+    public Vector3 travelVec { get; private set; }
 
     public virtual void OnEnter(FormationController fc) {
+        speedMultiplier = 1.0f;
         _fc = fc;
     }
 
     public virtual void UpdateState() 
     {
         if (_fc._ctrl.forwardMarch) {
-            _fc.transform.Translate(_fc._ctrl.forwardSpeed * Time.deltaTime * _fc.transform.forward, Space.World);
+            travelVec = Constants.SOLDIER_BASE_MOVE_SPEED * Time.deltaTime * speedMultiplier * _fc.transform.forward;
+            _fc.transform.Translate(travelVec, Space.World);
         }
     }
 
@@ -123,6 +127,12 @@ public abstract class AFormation
 
 public class Line : AFormation 
 {
+    public override void OnEnter(FormationController fc)
+    {
+        base.OnEnter(fc);
+        speedMultiplier = .6f;
+    }
+
     public override void Face(UnitController.Direction dir)
     {
         base.Face(dir);
