@@ -1,15 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Subdivision : MonoBehaviour {
-    enum FormationType
-    {
-        Line, Column
-    }
-
-    private FormationType formationType;
-
     public List<Marker> markers = new List<Marker>();
     private FormationController _ctrl;
          
@@ -30,7 +24,6 @@ public class Subdivision : MonoBehaviour {
     public void Initialize(FormationController ctrl)
     {
         _ctrl = ctrl;
-        formationType = FormationType.Line;
     }
 
     public void ColumnDir(Vector3 newDir)
@@ -141,27 +134,31 @@ public class Subdivision : MonoBehaviour {
         (formationDim.x, formationDim.y) = (formationDim.y, formationDim.x);
     }
 
-    List<Soldier> GetFront()
+    public void DoFront(Soldier.Callback cb)
     {
-        var front = new List<Soldier>();
-
-        var xComp = new Vector3(formationDim.x, 0, 0);
+        var xComp = new Vector3((formationDim.x - 1) * _ctrl.spacing, 0, 0);
         var centerFront = transform.position + xComp / 2;
         Collider[] hitColliders = Physics.OverlapBox(
             centerFront, 
-            xComp / 2, 
-            Quaternion.identity, 
+            xComp / 2 + Vector3.up, 
+            transform.rotation, 
             Constants.LAYER_SOLDIER
         );
 
         foreach ( var hit in hitColliders ) {
-            Debug.Log("Hit: " + hit.name);
             var s = hit.gameObject.GetComponent<Soldier>();
             if ( s != null ) {
-                front.Add(s);
+                cb(s);
             }
         }
-
-        return front;
+    }
+    void OnDrawGizmos()
+    {
+        // Draw a yellow cube at the transform position
+        Gizmos.color = Color.red;
+        //Gizmos.matrix = transform.localToWorldMatrix;
+        var xComp = new Vector3((formationDim.x - 1) * _ctrl.spacing, 0, 0);
+        var centerFront = transform.position + xComp / 2;
+        Gizmos.DrawWireCube(centerFront, new Vector3(xComp.x, 1, 1));
     }
 }

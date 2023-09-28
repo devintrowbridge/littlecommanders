@@ -122,10 +122,8 @@ public class FormationController : MonoBehaviour
 
     public void Fire()
     {
-        foreach (var soldier in soldiers) {
-            if (soldier != null) {
-                soldier.Fire();
-            }
+        foreach(var subdivision in sd) {
+            subdivision.DoFront(Soldier.Fire);
         }
     }
 }

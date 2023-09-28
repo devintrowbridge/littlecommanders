@@ -20,6 +20,7 @@ public class Soldier : MonoBehaviour
     private ParticleSystem gunsmoke;
     private ParticleSystem gunspark;
 
+    public delegate void Callback(Soldier s);
 
     // Start is called before the first frame update
     void Start()
@@ -52,10 +53,10 @@ public class Soldier : MonoBehaviour
         }
     }
 
-    public void Fire()
+    public static void Fire(Soldier s)
     {
         var delay = UnityEngine.Random.Range(0f, 1f);
-        StartCoroutine(Fire(delay));
+        s.StartCoroutine(s.Fire(delay));
     }
 
     // Update is called once per frame
