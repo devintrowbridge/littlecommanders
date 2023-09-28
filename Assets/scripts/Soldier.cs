@@ -16,9 +16,7 @@ public class Soldier : MonoBehaviour
     public float maxDistanceFromMark = .5f;
     private float tolerableDistFromMark = 0;
 
-    private AudioSource gunshot;
-    private ParticleSystem gunsmoke;
-    private ParticleSystem gunspark;
+    private Gun gun;
 
     public delegate void Callback(Soldier s);
 
@@ -26,30 +24,13 @@ public class Soldier : MonoBehaviour
     void Start()
     {
         tolerableDistFromMark = UnityEngine.Random.Range(.1f, maxDistanceFromMark);
-        gunshot = transform.Find("Gun/Gunshot").GetComponent<AudioSource>();
-        gunsmoke = transform.Find("Gun/Gunsmoke").GetComponent<ParticleSystem>();
-        gunspark = transform.Find("Gun/Gunspark").GetComponent<ParticleSystem>();
+        gun = transform.Find("Gun").GetComponent<Gun>();
     }
 
     private IEnumerator Fire(float delay)
     {
         yield return new WaitForSeconds(UnityEngine.Random.Range(0f, delay));
-        gunshot.Play();
-        gunsmoke.Play();
-        gunspark.Play();
-
-        var raycast = Physics.Raycast(
-            transform.position,
-            transform.forward,
-            out var hit,
-            Mathf.Infinity,
-            Constants.LAYER_SOLDIER
-        );
-
-        if (raycast) {
-            Debug.DrawRay(transform.position, transform.forward * hit.distance, Color.yellow);
-            Debug.Log("Did Hit");
-        }
+        gun.Fire();
     }
 
     public void Fire()
@@ -77,9 +58,9 @@ public class Soldier : MonoBehaviour
         transform.Find("Body").GetComponent<MeshRenderer>().material.SetColor("_Color", Color.white);
     }
 
-    public void SetColor(Material mat)
+    public void SetColor(Color color)
     {
-        transform.Find("Body").GetComponent<MeshRenderer>().material = mat;
+        transform.Find("Body").GetComponent<MeshRenderer>().material.SetColor("_Color", color);
     }
 
     void GetOnMark()

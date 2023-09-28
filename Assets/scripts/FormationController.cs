@@ -93,7 +93,7 @@ public class FormationController : MonoBehaviour
     {
         mat = mat_;
         foreach (var soldier in soldiers) {
-            soldier.SetColor(mat);
+            soldier.SetColor(mat.color);
         }
     }
 

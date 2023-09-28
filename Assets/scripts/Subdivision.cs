@@ -4,9 +4,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Subdivision : MonoBehaviour {
+    private enum FormationType {
+        Column,
+        Line, 
+        Volley,
+        Square
+    };
+
+    FormationType formationType;
+
     public List<Marker> markers = new List<Marker>();
     private FormationController _ctrl;
-         
+
     int ranks;
     int files;
     Vector3 formationDim;
@@ -64,6 +73,8 @@ public class Subdivision : MonoBehaviour {
     // Creates a marker in the formation for each Soldier to stand on
     public void GenerateFormation(List<Soldier> soldiers)
     {
+        formationType = FormationType.Line;
+
         int positions = soldiers.Count;
         IEnumerator soldier = soldiers.GetEnumerator();
         soldier.MoveNext();
@@ -158,10 +169,6 @@ public class Subdivision : MonoBehaviour {
             var centerFront = - width / 2;
             var centerRank = centerFront + new Vector3(0, 0, -rank * _ctrl.spacing);
 
-            Debug.Log("width " + width + " center " + centerRank);
-
-            Debug.Log("center " + transform.TransformPoint(centerRank));
-
             Collider[] hitColliders = Physics.OverlapBox(
                 transform.TransformPoint(centerRank),
                 new Vector3(width.x / 2, .5f, .5f),
@@ -182,6 +189,9 @@ public class Subdivision : MonoBehaviour {
     // https://www.youtube.com/watch?v=EURWwDbKvWY
     public void MoveToFire()
     {
+        if (formationType == FormationType.Volley) return;
+        formationType = FormationType.Volley;
+
         // Three steps to volley fire
         // 1. Move into position
         // 2. Fire
@@ -193,7 +203,7 @@ public class Subdivision : MonoBehaviour {
         // first ranks kneels
         if (ranksColl.Count > 0) {
             foreach (var marker in ranksColl[0]) {
-                marker.transform.position += Vector3.down;
+                marker.transform.position += Vector3.down * 1.2f;
             }
         }
 
@@ -201,6 +211,7 @@ public class Subdivision : MonoBehaviour {
         if (ranksColl.Count > 1) {
             foreach (var marker in ranksColl[1]) {
                 var move = transform.forward * _ctrl.spacing * .5f;
+                move += transform.right * _ctrl.spacing * .1f;
                 marker.transform.position += move;
             }
         }
