@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public class Soldier : MonoBehaviour
 {
@@ -7,10 +8,9 @@ public class Soldier : MonoBehaviour
     private Vector3 end;
     public GameObject marker;
 
-    private float maxSpeed = Constants.SOLDIER_MAX_MOVE_SPEED;
-    private Vector3 velocity = Vector3.zero;
     private float rotSpeed = Constants.SOLDIER_BASE_ROT_SPEED;
     public bool moving = false;
+    Vector3 velocity = Vector3.zero;
 
     public float maxDistanceFromMark = .5f;
     private float tolerableDistFromMark = 0;
@@ -19,6 +19,12 @@ public class Soldier : MonoBehaviour
     private bool isDead = false;
 
     public delegate void Callback(Soldier s);
+
+    public static void MoveTo(Transform me, Vector3 pos, ref Vector3 velocity, float maxSpeed = Constants.SOLDIER_MAX_MOVE_SPEED)
+    {
+        me.LookAt(pos);
+        me.position = Vector3.SmoothDamp(me.position, pos, ref velocity, 0.1f, maxSpeed);
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -83,8 +89,7 @@ public class Soldier : MonoBehaviour
 
         // If we are moving, then translate our way over to the marker
         if (moving) {
-            transform.LookAt(new Vector3(end.x, 0, end.z));
-            transform.position = Vector3.SmoothDamp(transform.position, end, ref velocity, 0.1f, maxSpeed);
+            MoveTo(transform, end, ref velocity);
         }
     }
 

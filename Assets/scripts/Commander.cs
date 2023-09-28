@@ -43,7 +43,7 @@ public class Commander : MonoBehaviour {
         unit.ColumnDir(direction.normalized);
     }
 
-    protected virtual void FallIn()
+    public virtual void FallIn()
     {
         if (unit != null) { Destroy(unit.gameObject); }
 
@@ -56,7 +56,7 @@ public class Commander : MonoBehaviour {
         unit.name = "UnitController";
     }
 
-    protected virtual void Aim(Vector3 lookPosition)
+    public virtual void Aim(Vector3 lookPosition)
     {
         if (lookPosition == null) return;
 

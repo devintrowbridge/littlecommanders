@@ -150,6 +150,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8677798939643206261}
+  - component: {fileID: -3110581640202922284}
   m_Layer: 0
   m_Name: AICommander
   m_TagString: Untagged
@@ -173,6 +174,26 @@ Transform:
   - {fileID: 3334734509682050889}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-3110581640202922284
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5386754292564960600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6cc533e65049c0428bdc7a36acaefe4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 10
+  accSpeed: 10
+  rotSpeed: 10
+  avatar: {fileID: 1482462076130397447}
+  unitPrefab: {fileID: 9152005660369089021, guid: 71496c59a6c232c488bd1760d5babd0e, type: 3}
+  unitOffset: 6
+  mat: {fileID: 2100000, guid: 885cbd1fc0184764aa43717c894b3e5f, type: 2}
+  maxCommandDist: 10
 --- !u!1 &6273228011491987844
 GameObject:
   m_ObjectHideFlags: 0
