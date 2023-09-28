@@ -7,7 +7,9 @@ public class Soldier : MonoBehaviour
     private Vector3 end;
     public GameObject marker;
 
-    public float speed = Constants.SOLDIER_BASE_MOVE_SPEED;
+    private float maxSpeed = Constants.SOLDIER_MAX_MOVE_SPEED;
+    private Vector3 velocity = Vector3.zero;
+    private float rotSpeed = 10;
     public bool moving = false;
 
     public float maxDistanceFromMark = .5f;
@@ -70,21 +72,19 @@ public class Soldier : MonoBehaviour
 
         // If we're too far away and haven't start moving, then start moving
         if (TooFarFromMarker() && !moving) {
-            speed *= 1.5f; // catchup speed
             moving = true;
         }
 
         // If we're at the marker then stop moving and face forward
         if (!TooFarFromMarker()) {
             moving = false;
-            speed = Constants.SOLDIER_BASE_MOVE_SPEED;
             Facing();
         }
 
         // If we are moving, then translate our way over to the marker
         if (moving) {
-            transform.LookAt(end);
-            transform.Translate(Vector3.forward * speed * Time.deltaTime);
+            transform.LookAt(new Vector3(end.x, 0, end.z));
+            transform.position = Vector3.SmoothDamp(transform.position, end, ref velocity, 0.1f, maxSpeed);
         }
     }
 
@@ -95,9 +95,11 @@ public class Soldier : MonoBehaviour
 
     void Facing()
     {
-        transform.rotation = marker.transform.rotation;
+        var lookDir = new Vector3(0, marker.transform.rotation.eulerAngles.y, 0);
+        var lookRot = Quaternion.Euler(lookDir);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.deltaTime * rotSpeed);
     }
-
+    
     private void Die()
     {
         transform.eulerAngles = new Vector3(90f,0,0);

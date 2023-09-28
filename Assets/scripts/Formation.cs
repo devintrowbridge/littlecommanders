@@ -96,6 +96,11 @@ public abstract class AFormation {
     public virtual void ResetFormation()
     {
         foreach (var marker in _fc.markers) {
+            if (marker == null) {
+                _fc.markers.Remove(marker);
+                continue;
+            }
+
             marker.transform.localPosition = -new Vector3(marker.file, 0, marker.rank) * _fc.spacing;
         }
     }

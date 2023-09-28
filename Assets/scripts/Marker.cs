@@ -26,7 +26,6 @@ public class Marker : MonoBehaviour {
         pos.rank = rank;
         pos.file = file;
         transform.localPosition = -spacing * new Vector3(file, 0, rank);
-        Debug.Log(transform.localPosition);
     }
 
     public void SetPosition(FormPos pos)
