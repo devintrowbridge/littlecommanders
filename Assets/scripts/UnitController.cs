@@ -20,7 +20,7 @@ public class UnitController : MonoBehaviour
     private Material mat;
     private List<Soldier> soldiers = new List<Soldier>();
 
-    private List<Formation> formations = new List<Formation>();
+    private List<FormationController> formations = new List<FormationController>();
 
     public bool forwardMarch { private set; get;  }
     public float forwardSpeed { private set; get; } = Constants.SOLDIER_BASE_MOVE_SPEED;
@@ -38,15 +38,15 @@ public class UnitController : MonoBehaviour
     void Start()
     {
         // Create a subdivision 
-        var subd = Instantiate(
+        var form = Instantiate(
             subdivisionPrefab,
             transform.position,
             transform.rotation
-        ).GetComponent<Formation>();
-        subd.Initialize(this);
+        ).GetComponent<FormationController>();
+        form.Initialize(this);
         transform.position = Vector3.zero;
         transform.eulerAngles = Vector3.zero;
-        formations.Add(subd);
+        formations.Add(form);
 
         // See what soldiers are around
         Collider[] hits = Physics.OverlapSphere(formations[0].transform.position, yellDist);
@@ -59,19 +59,19 @@ public class UnitController : MonoBehaviour
         }
 
         // Put them in the formation
-        subd.GenerateFormation(soldiers);
+        form.GenerateFormation(soldiers);
         if (mat != null) SetColor(mat);
     }
 
     public void ColumnDir(Vector3 newDir)
     {
-        formations[0].ColumnDir(newDir);
+        formations[0].state.ColumnDir(newDir);
     }
 
     public void Face(Direction dir)
     {
         foreach (var f in formations) {
-            f.Face(dir);
+            f.state.Face(dir);
         }
     }
 
@@ -113,9 +113,7 @@ public class UnitController : MonoBehaviour
     public void ForwardMarch()
     {
         foreach (var f in formations) {
-            if (f.formationType == Formation.FormationType.Volley) {
-                f.ResetFormation();
-            }
+            f.state.ResetFormation();
         }
         forwardMarch = true;
     }
@@ -132,7 +130,7 @@ public class UnitController : MonoBehaviour
 
         // Move into volley formation
         foreach (var f in formations) {
-            f.MoveToFire();
+            f.state.MoveToFire();
         }
 
         yield return new WaitForSeconds(1);
