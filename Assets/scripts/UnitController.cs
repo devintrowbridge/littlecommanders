@@ -54,7 +54,9 @@ public class UnitController : MonoBehaviour
         foreach (var hit in hits) {
             if (hit.gameObject.CompareTag("Soldier")) {
                 var soldier = hit.gameObject.GetComponent<Soldier>();
-                soldiers.Add(soldier);
+                
+                // Soldiers should only fall in they don't already belond to a unit
+                if (soldier.marker == null) soldiers.Add(soldier); 
             }
         }
 
