@@ -7,6 +7,7 @@ using UnityEngine.Timeline;
 using UnityEngine.UIElements;
 using static FormationController;
 using static UnityEditor.PlayerSettings;
+using static UnityEngine.UI.Image;
 
 public abstract class AFormation 
 {
@@ -25,6 +26,26 @@ public abstract class AFormation
 
     public virtual void OnExit() { }
 
+    Vector3 getNewOriginWorld(UnitController.Direction dir)
+    {
+        // The origin of the formation is rank 1, file 1.
+        // Positive z/forward is the direction the formation is facing
+
+        var newOrigin = Vector3.zero;
+
+        switch (dir) {
+            case UnitController.Direction.Left:
+                // Facing left, the new origin will the the front & left-most corner
+                newOrigin.x = -_fc._ctrl.spacing * (_fc.files - 1);
+                break;
+            case UnitController.Direction.Right:
+                // Facing right, the new origin will be the current back & right-most corner 
+                newOrigin.z = -_fc._ctrl.spacing * (_fc.ranks - 1);
+                break;
+        }
+
+        return _fc.transform.TransformPoint(newOrigin);
+    }
 
     public virtual void Face(UnitController.Direction dir)
     {
@@ -36,16 +57,15 @@ public abstract class AFormation
         foreach (var marker in _fc.markers) {
             marker.transform.parent = null;
         }
-        _fc._center.transform.parent = null;
 
+        var newOrigin = getNewOriginWorld(dir);
         _fc.transform.Rotate(Vector3.up, ang);
+        _fc.transform.position = newOrigin;
 
         foreach (var marker in _fc.markers) {
             marker.transform.parent = _fc.transform;
             marker.transform.rotation = _fc.transform.rotation;
         }
-        _fc._center.transform.parent = _fc.transform;
-        _fc._center.transform.rotation = _fc.transform.rotation;
 
         // swap the formation dims so they still make sense
         (_fc.ranks, _fc.files) = (_fc.files, _fc.ranks);
@@ -62,7 +82,7 @@ public abstract class AFormation
         Vector3 formationTrueDim = _fc._ctrl.spacing * (formationDim - new Vector3(1, 0, 1));
 
         // Find the center of the formation and apply an offset to get the front of the formation
-        var center = _fc.transform.InverseTransformPoint(_fc._center.transform.position);
+        var center = -formationTrueDim / 2;
         var pivotDir = angleDir > 0 ? Vector3.right : -Vector3.right;
 
         // Push offset out to the edge of the formation in the forward direction
@@ -166,7 +186,9 @@ public class Column : AFormation
 public class Volley : AFormation 
 {
     public override void UpdateState() { }
-    public override void Face(UnitController.Direction dir) { }
+    public override void Face(UnitController.Direction dir) {
+        ResetFormation();
+    }
 
     public override void ResetFormation()
     {
@@ -184,7 +206,6 @@ public class FormationController : MonoBehaviour
     public AFormation state { get; private set; }
     public List<Marker> markers = new List<Marker>();
     public UnitController _ctrl { get; private set; }
-    public GameObject _center;
 
     public int ranks;
     public int files;
@@ -204,10 +225,6 @@ public class FormationController : MonoBehaviour
     public void Initialize(UnitController ctrl)
     {
         _ctrl = ctrl;
-
-        _center = new GameObject();
-        _center.transform.parent = transform;
-        _center.name = "center";
     }
 
     // Creates a marker in the formation for each Soldier to stand on
@@ -238,12 +255,6 @@ public class FormationController : MonoBehaviour
         files++;
 
         transform.position = transform.position + transform.right * (files - 1) * _ctrl.spacing / 2;
-
-        // get initial position of center
-        var formationDim = new Vector3(files, 0, ranks);
-        var localCenter = -(formationDim - new Vector3(1, 0, 1)) * _ctrl.spacing / 2;
-        _center.transform.position = transform.TransformPoint(localCenter);
-        _center.transform.rotation = transform.rotation;
 
         ChangeState(new Line());
     }
