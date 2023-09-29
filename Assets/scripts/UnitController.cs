@@ -28,14 +28,6 @@ public class UnitController : MonoBehaviour
         }
     }
 
-    public Vector3 forward {
-        private set { }  
-        get
-        {
-            return formation.transform.forward;
-        }
-    }
-
     // Start is called before the first frame update
     void Start()
     {

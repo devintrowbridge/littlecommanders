@@ -8,7 +8,6 @@ public class Soldier : MonoBehaviour
     private Vector3 end;
     public GameObject marker;
 
-    private float rotSpeed = Constants.SOLDIER_BASE_ROT_SPEED;
     public bool moving = false;
     Vector3 velocity = Vector3.zero;
 
@@ -24,6 +23,13 @@ public class Soldier : MonoBehaviour
     {
         me.LookAt(pos);
         me.position = Vector3.SmoothDamp(me.position, pos, ref velocity, 0.1f, maxSpeed);
+    }
+
+    public static void MatchRot(Transform target, Transform transform, float rotSpeed = Constants.SOLDIER_BASE_ROT_SPEED)
+    {
+        var lookDir = new Vector3(0, target.eulerAngles.y, 0);
+        var lookRot = Quaternion.Euler(lookDir);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.deltaTime * rotSpeed);
     }
 
     // Start is called before the first frame update
@@ -84,7 +90,7 @@ public class Soldier : MonoBehaviour
         // If we're at the marker then stop moving and face forward
         if (!TooFarFromMarker()) {
             moving = false;
-            Facing();
+            MatchRot(marker.transform, transform);
         }
 
         // If we are moving, then translate our way over to the marker
@@ -98,13 +104,6 @@ public class Soldier : MonoBehaviour
         return (transform.position - end).magnitude > tolerableDistFromMark;
     }
 
-    void Facing()
-    {
-        var lookDir = new Vector3(0, marker.transform.rotation.eulerAngles.y, 0);
-        var lookRot = Quaternion.Euler(lookDir);
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.deltaTime * rotSpeed);
-    }
-    
     private void Die()
     {
         transform.eulerAngles = new Vector3(90f,0,0);

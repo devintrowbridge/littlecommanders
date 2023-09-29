@@ -8,7 +8,7 @@ public class Commander : MonoBehaviour {
     public GameObject avatar;
     public GameObject unitPrefab;
 
-    protected UnitController unit;
+    public UnitController unit;
     public float unitOffset = 6f;
 
     public Material mat;
@@ -20,23 +20,23 @@ public class Commander : MonoBehaviour {
     {
         // Move with unit
         if (unit && unit.forwardMarch) {
-            transform.Translate(unit.travelVec);
+            transform.Translate(unit.travelVec, Space.World);
         }
     }
 
-    protected virtual void Fire()
+    public virtual void Fire()
     {
         if (unit == null) return;
         StartCoroutine(unit.Fire());
     }
 
-    protected virtual void Reload()
+    public virtual void Reload()
     {
         if (unit == null) return;
         unit.Reload();
     }
 
-    protected virtual void ColumnMarch(Vector3 direction)
+    public virtual void ColumnMarch(Vector3 direction)
     {
         if (!Commandable()) return;
         direction.y = 0;
@@ -58,8 +58,6 @@ public class Commander : MonoBehaviour {
 
     public virtual void Aim(Vector3 lookPosition)
     {
-        if (lookPosition == null) return;
-
         // Calculate the direction
         var direction = lookPosition - avatar.transform.position;
 
