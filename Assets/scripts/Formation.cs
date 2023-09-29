@@ -105,17 +105,16 @@ public abstract class AFormation {
         }
     }
 
-    public virtual void ColumnDir(Vector3 newDir)
+    public virtual void ColumnDir(float angleOffForward)
     {
-        float angleDir = Vector3.SignedAngle(_fc.transform.forward, newDir, Vector3.up);
-        if (Mathf.Abs(angleDir) > 90f) return;
+        if (Mathf.Abs(angleOffForward) > 90f) return;
 
         var formationDim = new Vector3(_fc.files, 0, _fc.ranks);
         Vector3 formationTrueDim = _fc.spacing * (formationDim - new Vector3(1, 0, 1));
 
         // Find the center of the formation and apply an offset to get the front of the formation
         var center = -formationTrueDim / 2;
-        var pivotDir = angleDir > 0 ? Vector3.right : -Vector3.right;
+        var pivotDir = angleOffForward > 0 ? Vector3.right : -Vector3.right;
 
         // Push offset out to the edge of the formation in the forward direction
         var offset = Vector3.Scale(Vector3.forward, formationTrueDim / 2);
@@ -125,7 +124,13 @@ public abstract class AFormation {
         var pivotPoint = center + offset;
 
         // rotate formation around pivot
-        _fc.transform.RotateAround(_fc.transform.TransformPoint(pivotPoint), Vector3.up, angleDir);
+        _fc.transform.RotateAround(_fc.transform.TransformPoint(pivotPoint), Vector3.up, angleOffForward);
+    }
+
+    public virtual void ColumnDir(Vector3 newDir)
+    {
+        float angleDir = Vector3.SignedAngle(_fc.transform.forward, newDir, Vector3.up);
+        ColumnDir(angleDir);
     }
 
     public virtual void MoveToFire() { }

@@ -36,6 +36,12 @@ public class Commander : MonoBehaviour {
         unit.Reload();
     }
 
+    public virtual void ColumnMarch(float angleOffForward)
+    {
+        if (!Commandable()) return;
+        unit.ColumnDir(angleOffForward);
+    }
+
     public virtual void ColumnMarch(Vector3 direction)
     {
         if (!Commandable()) return;

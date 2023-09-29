@@ -14,7 +14,8 @@ public abstract class AAiCommander
         _sc = sc;
     }
 
-    public virtual void UpdateState() { }
+    public virtual void UpdateState() {
+    }
     public virtual void OnExit() { }
 }
 
@@ -81,6 +82,9 @@ internal class Patrolling : AAiCommander
 {
     Vector3 centerPoint;
     private float maxPatrolDist = 100f;
+    private bool turningAround = false;
+    private float tolerableDistFromMark = 0;
+    private Vector3 velocity;
 
     public override void OnEnter(AiCommanderStateController sc)
     {
@@ -89,12 +93,47 @@ internal class Patrolling : AAiCommander
         centerPoint = _sc.transform.position;
         _sc.CommandRight();
         _sc.CommandForwardMarch();
+        tolerableDistFromMark = Random.Range(0f, 0.5f);
+    }
+
+    IEnumerator NewPatrolDir()
+    {
+        // turn completely around
+        _sc.ColumnMarch(89f);
+        yield return new WaitForSeconds(2);
+        _sc.ColumnMarch(89f);
+        yield return new WaitForSeconds(2);
+
+        // random 90° rotation  
+        _sc.ColumnMarch(Random.Range(-45f, 45f));
+
+        // wait 3 seconds to get back in the patrol bubble
+        yield return new WaitForSeconds(3);
+
+        turningAround = false;
     }
 
     public override void UpdateState()
     {
         var lookDir = _sc.transform.position + _sc.unit.travelVec;
+
+        // The commander should always tend to be on the left side of the formation
+        // towards the front
+        var properPos = Vector3.zero;
+        properPos += _sc.unit.formation.transform.position - (_sc.unit.formation.transform.right * 8);
+        properPos -= _sc.unit.travelVec * 3; 
+
+        if ((properPos - _sc.transform.position).magnitude > tolerableDistFromMark) {
+            Soldier.MoveTo(_sc.transform, properPos, ref velocity, Constants.SOLDIER_MAX_MOVE_SPEED / 2);
+            lookDir = properPos;
+        }
         _sc.Aim(lookDir);
+
+        var distFromCenter = (_sc.transform.position - centerPoint).magnitude;
+        if (!turningAround && distFromCenter > maxPatrolDist) {
+            turningAround = true;
+            _sc.StartCoroutine(NewPatrolDir());
+        }
     }
 }
 
