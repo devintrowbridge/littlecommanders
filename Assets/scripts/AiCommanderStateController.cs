@@ -120,7 +120,7 @@ internal class Patrolling : AAiCommander
         // The commander should always tend to be on the left side of the formation
         // towards the front
         var properPos = Vector3.zero;
-        properPos += _sc.unit.formation.transform.position - (_sc.unit.formation.transform.right * 8);
+        properPos += _sc.unit.transform.position - (_sc.unit.transform.right * 8);
         properPos -= _sc.unit.travelVec * 3; 
 
         if ((properPos - _sc.transform.position).magnitude > tolerableDistFromMark) {

@@ -15,7 +15,7 @@ public class UnitController : MonoBehaviour
     private Material mat;
     private List<Soldier> soldiers = new List<Soldier>();
 
-    public FormationController formation { get; private set; }
+    private FormationController formation;
     public bool forwardMarch { private set; get;  }
     public Vector3 travelVec { 
         get {
@@ -54,6 +54,12 @@ public class UnitController : MonoBehaviour
         // Put them in the formation
         formation.GenerateFormation(soldiers);
         if (mat != null) SetColor(mat);
+    }
+
+    private void Update()
+    {
+        transform.position = formation.transform.position;
+        transform.rotation = formation.transform.rotation;
     }
 
     public void ColumnDir(float angleOffFwd)

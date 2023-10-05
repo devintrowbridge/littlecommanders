@@ -43,7 +43,7 @@ protected override void LateUpdate()
     {
         var position = GetMousePosition();
         if (position == null) return;
-        var direction = (Vector3) position - avatar.transform.position;
+        var direction = (Vector3) position - unit.transform.position;
         base.ColumnMarch(direction);
     }
 
