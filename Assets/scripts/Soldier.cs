@@ -104,12 +104,19 @@ public class Soldier : MonoBehaviour
         return (transform.position - end).magnitude > tolerableDistFromMark;
     }
 
+    IEnumerator Decompose()
+    {
+        yield return new WaitForSeconds(10);
+        gameObject.SetActive(false);
+    }
+
     private void Die()
     {
         transform.eulerAngles = new Vector3(90f,0,0);
         SetColor(Color.red);
         isDead = true;
         Destroy(marker);
+        StartCoroutine(Decompose());
     }
 
     public void Hit()

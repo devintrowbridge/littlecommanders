@@ -19,6 +19,7 @@ public abstract class AAiCommander
     public virtual void OnExit() { }
 }
 
+// This is when the ai commander doesn't have a formation yet and needs to go find one.
 internal class Searching : AAiCommander 
 {
     public float maxSearchDist = 500;
@@ -54,6 +55,7 @@ internal class Searching : AAiCommander
         else closestSoldier = FindClosestSoldier();
     }
 }
+
 
 internal class Idle : AAiCommander 
 {
