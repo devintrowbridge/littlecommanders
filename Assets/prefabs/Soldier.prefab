@@ -260,6 +260,7 @@ GameObject:
   - component: {fileID: 851359294740632692}
   - component: {fileID: -800396650814124532}
   - component: {fileID: -7692166621546921908}
+  - component: {fileID: 4814411411269071979}
   m_Layer: 3
   m_Name: Soldier
   m_TagString: Soldier
@@ -323,9 +324,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   start: {x: 0, y: 0, z: 0}
   marker: {fileID: 0}
-  speed: 8
   moving: 0
   maxDistanceFromMark: 0.5
+--- !u!114 &4814411411269071979
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8215161456567260993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8caf2771f8d0284ea4abd33e46eab36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &3770788216976770874
 PrefabInstance:
   m_ObjectHideFlags: 0
